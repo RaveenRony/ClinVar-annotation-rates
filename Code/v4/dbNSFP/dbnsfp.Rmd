@@ -1,0 +1,330 @@
+
+Library of packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+library('corrr')
+library(ggcorrplot)
+library("FactoMineR")
+library(factoextra)
+```
+
+Data for annotation from dbNSFP
+```{r}
+#ATM
+gnomadv4_count %>% filter(gene=="ATM", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/atm_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="ATM", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/atm_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="ATM", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/atm_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="ATM", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/atm_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#BARD1
+gnomadv4_count %>% filter(gene=="BARD1", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/bard1_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BARD1", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/bard1_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BARD1", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/bard1_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BARD1", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/bard1_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#BRCA1
+gnomadv4_count %>% filter(gene=="BRCA1", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca1_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA1", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca1_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA1", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca1_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA1", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca1_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#BRCA2
+gnomadv4_count %>% filter(gene=="BRCA2", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca2_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA2", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca2_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA2", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca2_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="BRCA2", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/brca2_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#CHEK2
+gnomadv4_count %>% filter(gene=="CHEK2", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/chek2_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="CHEK2", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/chek2_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="CHEK2", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/chek2_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="CHEK2", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/chek2_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#PALB2
+gnomadv4_count %>% filter(gene=="PALB2", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/palb2_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="PALB2", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/palb2_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="PALB2", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/palb2_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="PALB2", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/palb2_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#RAD51C
+gnomadv4_count %>% filter(gene=="RAD51C", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51c_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51C", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51c_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51C", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51c_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51C", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51c_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#RAD51D
+gnomadv4_count %>% filter(gene=="RAD51D", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51d_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51D", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51d_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51D", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51d_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="RAD51D", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/rad51d_blank.txt"), row.names = F, col.names = F, quote = F)
+
+#TP53
+gnomadv4_count %>% filter(gene=="TP53", clin_var_clinical_significance=="Benign") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/tp53_ben.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="TP53", clin_var_clinical_significance=="Pathogenic") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/tp53_path.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="TP53", clin_var_clinical_significance=="Uncertain") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/tp53_vus.txt"), row.names = F, col.names = F, quote = F)
+
+gnomadv4_count %>% filter(gene=="TP53", clin_var_clinical_significance=="Unreported") %>% mutate(gnom_ad_id = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(gnom_ad_id) %>% write.table(here("output/dbnsfp/v4/data/tp53_blank.txt"), row.names = F, col.names = F, quote = F)
+```
+
+dbNSFP result
+```{r}
+count_missing <- function(row) sum(row == ".")
+
+#ATM
+atmv4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/atm_ben.txt"), sep="\t", header = T)) %>% mutate(gene="ATM") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ") %>% mutate_all(as.character)
+atmv4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/atm_path.txt"), sep="\t", header = T)) %>% mutate(gene="ATM") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ") %>% mutate_all(as.character)
+atmv4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/atm_vus.txt"), sep="\t", header = T)) %>% mutate(gene="ATM") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+atmv4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/atm_blank.txt"), sep="\t", header = T)) %>% mutate(gene="ATM") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#BARD1
+bard1v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/bard1_ben.txt"), sep="\t", header = T)) %>% mutate(gene="BARD1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+bard1v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/bard1_path.txt"), sep="\t", header = T)) %>% mutate(gene="BARD1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+bard1v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/bard1_vus.txt"), sep="\t", header = T)) %>% mutate(gene="BARD1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+bard1v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/bard1_blank.txt"), sep="\t", header = T)) %>% mutate(gene="BARD1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#BRCA1
+brca1v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca1_ben.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca1v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca1_path.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca1v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca1_vus.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca1v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca1_blank.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA1") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#BRCA2
+brca2v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca2_ben.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca2v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca2_path.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca2v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca2_vus.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+brca2v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/brca2_blank.txt"), sep="\t", header = T)) %>% mutate(gene="BRCA2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#CHEK2
+chek2v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/chek2_ben.txt"), sep="\t", header = T)) %>% mutate(gene="CHEK2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+chek2v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/chek2_path.txt"), sep="\t", header = T)) %>% mutate(gene="CHEK2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+chek2v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/chek2_vus.txt"), sep="\t", header = T)) %>% mutate(gene="CHEK2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+chek2v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/chek2_blank.txt"), sep="\t", header = T)) %>% mutate(gene="CHEK2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#PALB2
+palb2v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/palb2_ben.txt"), sep="\t", header = T)) %>% mutate(gene="PALB2") %>% mutate_all(as.character) %>% mutate(ref = case_when(ref== "TRUE" ~ "T", T ~ alt)) %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")
+palb2v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/palb2_path.txt"), sep="\t", header = T)) %>% mutate(gene="PALB2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+palb2v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/palb2_vus.txt"), sep="\t", header = T)) %>% mutate(gene="PALB2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+palb2v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/palb2_blank.txt"), sep="\t", header = T)) %>% mutate(gene="PALB2") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#RAD51C
+rad51cv4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51c_ben.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51C") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+rad51cv4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51c_path.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51C") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+rad51cv4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51c_vus.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51C") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+rad51cv4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51c_blank.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51C") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#RAD51D
+rad51dv4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51d_ben.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51D") %>% mutate_all(as.character) %>% mutate(alt = case_when(alt== "TRUE" ~ "T", T ~ alt)) %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")
+rad51dv4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51d_path.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51D") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+rad51dv4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51d_vus.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51D") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+rad51dv4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/rad51d_blank.txt"), sep="\t", header = T)) %>% mutate(gene="RAD51D") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+
+#TP53
+tp53v4_ben <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/tp53_ben.txt"), sep="\t", header = T)) %>% mutate(gene="TP53") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+tp53v4_path <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/tp53_path.txt"), sep="\t", header = T)) %>% mutate(gene="TP53") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+tp53v4_vus <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/tp53_vus.txt"), sep="\t", header = T)) %>% mutate(gene="TP53") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+tp53v4_blank <- clean_names(read.table(here("output/dbnsfp/v4/outputv1/tp53_blank.txt"), sep="\t", header = T)) %>% mutate(gene="TP53") %>% unite(dbnsfp, chr, pos, ref, alt, sep = " ")%>% mutate_all(as.character)
+```
+
+Removing duplicated results to get skipped variants
+```{r}
+atmv4_ben <- atmv4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+atmv4_blank <- atmv4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+atmv4_path <- atmv4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+atmv4_vus <- atmv4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+bard1v4_ben <- bard1v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+bard1v4_blank <- bard1v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+bard1v4_path <- bard1v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+bard1v4_vus <- bard1v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+brca1v4_ben <- brca1v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca1v4_blank <- brca1v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca1v4_path <- brca1v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca1v4_vus <- brca1v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+brca2v4_ben <- brca2v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca2v4_blank <- brca2v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca2v4_path <- brca2v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+brca2v4_vus <- brca2v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+chek2v4_ben <- chek2v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+chek2v4_blank <- chek2v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+chek2v4_path <- chek2v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+chek2v4_vus <- chek2v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+palb2v4_ben <- palb2v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+palb2v4_blank <- palb2v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+palb2v4_path <- palb2v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+palb2v4_vus <- palb2v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+rad51cv4_ben <- rad51cv4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51cv4_blank <- rad51cv4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51cv4_path <- rad51cv4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51cv4_vus <- rad51cv4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+rad51dv4_ben <- rad51dv4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51dv4_blank <- rad51dv4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51dv4_path <- rad51dv4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+rad51dv4_vus <- rad51dv4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+
+tp53v4_ben <- tp53v4_ben %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+tp53v4_blank <- tp53v4_blank %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+tp53v4_path <- tp53v4_path %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+tp53v4_vus <- tp53v4_vus %>% rowwise() %>% mutate(missing_col = count_missing(c_across())) %>% group_by(dbnsfp) %>% 
+  filter(missing_col == min(missing_col))
+
+rad51dv4_blank <- rad51dv4_blank[!duplicated(rad51dv4_blank$dbnsfp),]
+rad51dv4_path <- rad51dv4_path[!duplicated(rad51dv4_path$dbnsfp),]
+rad51dv4_vus <- rad51dv4_vus[!duplicated(rad51dv4_vus$dbnsfp),]
+tp53v4_ben <- tp53v4_ben[!duplicated(tp53v4_ben$dbnsfp),]
+tp53v4_blank <- tp53v4_blank[!duplicated(tp53v4_blank$dbnsfp),]
+```
+ATM Benign = 5/5, Blank = 764/917, Path = 212/398, VUS = 1718/1743
+BARD1 Benign = 3/3, Blank = 231/287, Path = 34/63, VUS = 487/497 
+BRCA1 Benign = 58/58, Blank = 489/527, Path = 132/269, VUS = 953/977
+BRCA2 Benign = 33/39, Blank = 849/954, Path = 194/461, VUS = 1988/2043
+CHEK2 Benign = 2/2 , Blank = 168/204, Path = 42/89, VUS = 347/361
+PALB2 Benign = 8/10, Blank = 327/370, Path = 61/140, VUS = 704/718
+RAD51C Benign = 5/6, Blank = 166/190, Path = 22/40, VUS = 247/256
+RAD51D Benign = 2/2, Blank = 184/219, Path = 15/39, VUS = 196/202
+TP53 Benign = 29/31, Blank = 113/136, Path = 57/59, VUS = 202/205
+
+Joining all the files that were run by dbNSFP
+```{r}
+dbnsfpv4_1 <- full_join(atmv4_ben, atmv4_blank) %>% full_join(atmv4_path) %>% full_join(atmv4_vus) %>% full_join(bard1v4_blank) %>% full_join(bard1v4_path) %>% full_join(bard1v4_vus) %>% full_join(brca1v4_ben) %>% full_join(brca1v4_blank) %>% full_join(brca1v4_path) %>% full_join(brca1v4_vus) %>% full_join(brca2v4_ben) %>% full_join(brca2v4_blank) %>% full_join(brca2v4_path) %>% full_join(brca2v4_vus) %>% full_join(chek2v4_blank) %>% full_join(chek2v4_path) %>% full_join(chek2v4_vus) %>% full_join(palb2v4_ben) %>% full_join(palb2v4_blank) %>% full_join(palb2v4_path) %>% full_join(palb2v4_vus) %>% full_join(rad51cv4_ben) %>% full_join(rad51cv4_blank) %>% full_join(rad51cv4_path) %>% full_join(rad51cv4_vus) %>% full_join(rad51dv4_ben) %>% full_join(rad51dv4_blank) %>% full_join(rad51dv4_path) %>% full_join(rad51dv4_vus) %>% full_join(tp53v4_ben) %>% full_join(tp53v4_blank) %>% full_join(tp53v4_path) %>% full_join(tp53v4_vus) %>% mutate(sift_score=as.numeric(sift_score),
+                                    sift_converted_rankscore=as.numeric(sift_converted_rankscore),
+                                    polyphen2_hdiv_score=as.numeric(polyphen2_hdiv_score),
+                                    polyphen2_hdiv_rankscore=as.numeric(polyphen2_hdiv_rankscore),
+                                    polyphen2_hvar_score=as.numeric(polyphen2_hvar_score),
+                                    polyphen2_hvar_rankscore=as.numeric(polyphen2_hvar_rankscore),
+                                    mutation_assessor_score=as.numeric(mutation_assessor_score),
+                                    mutation_assessor_rankscore=as.numeric(mutation_assessor_rankscore),
+                                    fathmm_score=as.numeric(fathmm_score),
+                                    fathmm_converted_rankscore=as.numeric(fathmm_converted_rankscore),
+                                    vest4_score=as.numeric(vest4_score),
+                                    vest4_rankscore=as.numeric(vest4_rankscore),
+                                    meta_svm_score=as.numeric(meta_svm_score),
+                                    meta_svm_rankscore=as.numeric(meta_svm_rankscore),
+                                    meta_lr_score=as.numeric(meta_lr_score),
+                                    meta_lr_rankscore=as.numeric(meta_lr_rankscore),
+                                    revel_score=as.numeric(revel_score),
+                                    revel_rankscore=as.numeric(revel_rankscore),
+                                    cadd_raw=as.numeric(cadd_raw),
+                                    cadd_raw_rankscore=as.numeric(cadd_raw_rankscore),
+                                    cadd_phred=as.numeric(cadd_phred),
+                                    cadd_raw_hg19=as.numeric(cadd_raw_hg19),
+                                    cadd_raw_rankscore_hg19=as.numeric(cadd_raw_rankscore_hg19),
+                                    cadd_phred_hg19=as.numeric(cadd_phred_hg19),
+                                    gerp_nr=as.numeric(gerp_nr),
+                                    gerp_rs=as.numeric(gerp_rs),
+                                    gerp_rs_rankscore=as.numeric(gerp_rs_rankscore),
+                                    alpha_missense_score=as.numeric(alpha_missense_score),
+                                    alpha_missense_rankscore=as.numeric(alpha_missense_rankscore))
+
+gnomadv4_dbnsfp <- gnomadv4_count %>% mutate(dbnsfp = paste(chromosome, position, reference, alternate, sep = " ")) %>% select(dbnsfp, gene, chromosome, position, reference, alternate, population, clin_var_clinical_significance, vep_annotation)
+
+dbnsfp_v4gnomad <- inner_join(gnomadv4_dbnsfp, dbnsfpv4_1, by="dbnsfp") %>% select(-genename)
+```
+
+dbNSFP data with only predictions
+```{r}
+prediction_v4 <- dbnsfp_v4gnomad %>% 
+  mutate(meta_svm_pred=case_when(meta_svm_score>0~"D", is.na(meta_svm_score)~ "B", T ~ "T"),
+         meta_lr_pred=case_when(meta_lr_score>0.5~"D", is.na(meta_lr_score)~ "B", T ~ "T"),
+         polyphen2_hdiv_pred=case_when(polyphen2_hdiv_score>0.5~"D", is.na(polyphen2_hdiv_score)~ "B", T ~ "T"),
+         sift_pred=case_when(sift_score>0.05~"D", is.na(sift_score)~ "B", T ~ "T"),
+         mutation_assessor_pred=case_when(mutation_assessor_score>3.5~"H",
+                                          mutation_assessor_score>1.935 & mutation_assessor_score< 3.5~"M", 
+                                          mutation_assessor_score>0.8 & mutation_assessor_score<1.935~"L", 
+                                          is.na(mutation_assessor_score)~ "B", T ~ "N"),
+         fathmm_pred=ifelse(fathmm_score< -1.5, "D", "T"),
+         fathmm_pred=case_when(is.na(fathmm_score)~ "B", T ~ fathmm_pred),
+         alpha_missense_pred=case_when(alpha_missense_pred=="B"~"T", alpha_missense_pred=="P"~"D",
+                                       alpha_missense_pred=="." ~ "B", T ~ alpha_missense_pred)) %>% 
+  select(gene.x, dbnsfp, chromosome, position, reference, alternate, population, clin_var_clinical_significance, vep_annotation, sift_pred, polyphen2_hdiv_pred, mutation_assessor_pred, fathmm_pred, meta_svm_pred, meta_lr_pred, alpha_missense_pred) %>% 
+  mutate(blank_count = rowSums(select(., meta_svm_pred, meta_lr_pred, polyphen2_hdiv_pred, fathmm_pred, sift_pred, mutation_assessor_pred, alpha_missense_pred) == "B")) %>% 
+  rename("gene"="gene.x") %>%
+  filter(blank_count<4) %>% 
+  mutate(count = rowSums(select(., meta_svm_pred, meta_lr_pred, polyphen2_hdiv_pred, fathmm_pred, sift_pred, mutation_assessor_pred, alpha_missense_pred) == "D" |
+                             select(., meta_svm_pred, meta_lr_pred, polyphen2_hdiv_pred, fathmm_pred, sift_pred, mutation_assessor_pred, alpha_missense_pred) == "H" |
+                             select(., meta_svm_pred, meta_lr_pred, polyphen2_hdiv_pred, fathmm_pred, sift_pred, mutation_assessor_pred, alpha_missense_pred) == "M"))
+```
+
+dbNSFP data with only rankscores
+```{r}
+rankscore_v4 <- dbnsfp_v4gnomad %>% 
+  select(gene.x, dbnsfp, chromosome, position, reference, alternate, population, clin_var_clinical_significance, vep_annotation, sift_converted_rankscore, polyphen2_hdiv_rankscore, polyphen2_hvar_rankscore, mutation_assessor_rankscore, fathmm_converted_rankscore, vest4_rankscore, meta_svm_rankscore, meta_lr_rankscore, revel_rankscore, cadd_raw_rankscore, cadd_raw_rankscore_hg19, gerp_rs_rankscore, alpha_missense_rankscore) %>%
+  rename("gene"="gene.x") %>%
+  mutate(blank_count = rowSums(is.na(select(., sift_converted_rankscore, polyphen2_hdiv_rankscore, polyphen2_hvar_rankscore, mutation_assessor_rankscore, fathmm_converted_rankscore, vest4_rankscore, meta_svm_rankscore, meta_lr_rankscore, revel_rankscore, cadd_raw_rankscore, cadd_raw_rankscore_hg19, gerp_rs_rankscore, alpha_missense_rankscore)))) %>% 
+  filter(blank_count<=7)
+```
+

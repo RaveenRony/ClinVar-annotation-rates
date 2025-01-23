@@ -1,0 +1,1115 @@
+
+Library of packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+
+Function for creating violin plots for specified rankscores with separated violins depending on ClinVar status
+```{r}
+rankscorev4 <- function(x, col_name){rankscore_v4[[col_name]]<- as.numeric(rankscore_v4[[col_name]])
+  rankscore_v4[[col_name]][rankscore_v4[[col_name]] == "."] <- NA
+  rankscore_v4 %>% 
+    filter(gene == x) %>% 
+    ggplot(aes(x = clin_var_clinical_significance, y = .data[[col_name]])) + 
+    geom_violin(fill = "#0AD6F2", alpha = 0.4, width = 0.9) +
+    stat_summary(fun = "median", geom = "point", colour = "#0A2581", position = position_dodge(0.3))+
+    stat_summary(fun.data = "median_hilow", geom = "errorbar", colour = "#0A2581", width=0.3)+
+    ylim(0,1)+
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported")+ 
+    labs(x="ClinVar Clinical Significance")}
+```
+ATM rankscore
+```{r}
+rankscorev4("ATM", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("ATM", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/ATM/ATM_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+BARD1 rankscore
+```{r}
+rankscorev4("BARD1", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BARD1", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BARD1/BARD1_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+BRCA1 rankscore
+```{r}
+rankscorev4("BRCA1", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA1", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA1/BRCA1_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+BRCA2 rankscore
+```{r}
+rankscorev4("BRCA2", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("BRCA2", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/BRCA2/BRCA2_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+CHEK2 rankscore
+```{r}
+rankscorev4("CHEK2", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("CHEK2", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/CHEK2/CHEK2_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+PALB2 rankscore
+```{r}
+rankscorev4("PALB2", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("PALB2", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/PALB2/PALB2_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+RAD51C rankscore
+```{r}
+rankscorev4("RAD51C", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51C", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51C/RAD51C_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+RAD51D rankscore
+```{r}
+rankscorev4("RAD51D", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("RAD51D", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/RAD51D/RAD51D_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+TP53 rankscore
+```{r}
+rankscorev4("TP53", "sift_converted_rankscore") + labs(y = "SIFT rankscore") + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_sift.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "polyphen2_hdiv_rankscore") + labs(y = "Polyphen2 HDIV rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "polyphen2_hvar_rankscore") + labs(y = "Polyphen2 HVAR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "meta_lr_rankscore") + labs(y = "MetaLR rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_metalr.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "meta_svm_rankscore")+ labs(y = "MetaSVM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_metasvm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "mutation_assessor_rankscore") + labs(y = "Mutation Assessor rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_ma.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "fathmm_converted_rankscore") + labs(y = "FATHMM rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_fathmm.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "vest4_rankscore") + labs(y = "VEST4 rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_vest4.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "revel_rankscore") + labs(y = "REVEL rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "cadd_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "cadd_raw_rankscore_hg19") + labs(y = "CADD hg19 raw rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_caddhg19.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "gerp_rs_rankscore") + labs(y = "GERP rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+rankscorev4("TP53", "alpha_missense_rankscore") + labs(y = "Alpha Missense rankscore") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/v4/ranks/TP53/TP53_alpha.png"), width = 8, height = 6, dpi = 300)
+```
+
+Function for creating bar graph for the number of variants that the number of algorithms that predicted pathogenic
+```{r}
+predictionv4 <- function(x) {prediction_v4 %>% filter(gene==x) %>% unite(test, gene, clin_var_clinical_significance, sep = " ") %>% group_by(test) %>% count(count) %>% separate(test, into = (c("gene","Clin_var_significance")), sep=" ") %>% filter(Clin_var_significance!="Uncertain") %>%   ggplot(aes(x=as.character(count), y=n, fill = Clin_var_significance)) + geom_col(position = "dodge") + labs(title = x, x="Number of algorithms predicted damaging", y= "count")+ xlim("0","1","2", "3", "4", "5","6", "7") + scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))}
+```
+Prediction graph
+```{r}
+predictionv4("ATM")
+ggsave(here("output/v4/pred/ATM_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BARD1")
+ggsave(here("output/v4/pred/BARD1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BRCA1")
+ggsave(here("output/v4/pred/BRCA1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BRCA2")
+ggsave(here("output/v4/pred/BRCA2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("CHEK2")
+ggsave(here("output/v4/pred/CHEK2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("PALB2")
+ggsave(here("output/v4/pred/PALB2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("RAD51C")
+ggsave(here("output/v4/pred/RAD51C_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("RAD51D")
+ggsave(here("output/v4/pred/RAD51D_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("TP53")
+ggsave(here("output/v4/pred/TP53_pred.png"), width = 8, height = 6, dpi = 300)
+```
+Number of variants converted to percentage of variants
+```{r}
+prediction_v4 %>%
+  filter(gene == "ATM") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for ATM", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/ATM.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "BARD1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for BARD1", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/BARD1.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "BRCA1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for BRCA1", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/BRCA1.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "BRCA2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for BRCA2", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/BRCA2.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "CHEK2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for CHEK2", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/CHEK2.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "PALB2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for PALB2", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/PALB2.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "RAD51C") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for RAD51C", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/RAD51C.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "RAD51D") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for RAD51D", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/RAD51D.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  filter(gene == "TP53") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = as.character(count), y = normalised, fill = Clin_var_significance)) +
+  geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that had pathogenic predictions by algorithms for TP53", x = "Number of pathogenic predictions", y= "Percentage of variants") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/TP53.png"), width = 8, height = 6, dpi = 300)
+
+prediction_v4 %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  ggplot(aes(x=as.character(count), y=normalised, fill=Clin_var_significance)) + facet_wrap(~gene) + geom_col(position = "dodge") + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms", x = "Number of pathogenic predictions", y= "Percentage")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/v4/pred/normal/panel.png"), width = 8, height = 6, dpi = 300)
+```
+
+Root Mean Square Deviation from Unreported values
+```{r}
+rmsd_pop_v4 <- function(x) {prediction_v4 %>%
+  filter(gene == x) %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n = case_when(is.na(n) ~ 0, TRUE ~ n)) %>%  
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%  
+  select(-c(gene, n)) %>%  
+  pivot_wider(names_from = Clin_var_significance, values_from = normalised) %>%
+  mutate(Benign = ifelse(!"Benign" %in% colnames(.), NA, Benign), 
+         Pathogenic = ifelse(!"Pathogenic" %in% colnames(.), NA, Pathogenic)) %>% 
+  mutate(rms_uncertain = round(sqrt((sum((Unreported - Uncertain)^2))/8),2),
+         rms_pathogenic= round(sqrt((sum((Unreported - Pathogenic)^2))/8),2),
+         rms_benign = round(sqrt((sum((Unreported - Benign)^2))/8),2)) %>% 
+  pivot_longer(cols = c(Benign, Pathogenic, Uncertain, Unreported) , names_to = "Clin_var_sig", values_to = "normalised") %>% 
+  mutate(rmsd = ifelse(Clin_var_sig == "Benign", rms_benign, 
+                       ifelse(Clin_var_sig == "Pathogenic", rms_pathogenic,
+                              ifelse(Clin_var_sig == "Uncertain", rms_uncertain,0)))) %>% 
+  select(Clin_var_sig, rmsd) %>% 
+  group_by(Clin_var_sig) %>% 
+  summarise(rmsd = mean(rmsd)) %>% 
+  rename("ClinVar Clinical Significance" = "Clin_var_sig")}
+
+rmsd_pop_v4("ATM") %>% write.csv(file = here("output/v4/csv files/rmsd/ATM_pop.csv"), row.names = F)
+rmsd_pop_v4("BARD1") %>% write.csv(file = here("output/v4/csv files/rmsd/BARD1_pop.csv"), row.names = F)
+rmsd_pop_v4("BRCA1") %>% write.csv(file = here("output/v4/csv files/rmsd/BRCA1_pop.csv"), row.names = F)
+rmsd_pop_v4("BRCA2") %>% write.csv(file = here("output/v4/csv files/rmsd/BRCA2_pop.csv"), row.names = F)
+rmsd_pop_v4("CHEK2") %>% write.csv(file = here("output/v4/csv files/rmsd/CHEK2_pop.csv"), row.names = F)
+rmsd_pop_v4("PALB2") %>% write.csv(file = here("output/v4/csv files/rmsd/PALB2_pop.csv"), row.names = F)
+rmsd_pop_v4("RAD51C") %>% write.csv(file = here("output/v4/csv files/rmsd/RAD51C_pop.csv"), row.names = F)
+rmsd_pop_v4("RAD51D")%>% write.csv(file = here("output/v4/csv files/rmsd/RAD51D_pop.csv"), row.names = F)
+rmsd_pop_v4("TP53") %>% write.csv(file = here("output/v4/csv files/rmsd/TP53_pop.csv"), row.names = F)
+
+rmsd_pop_ATM_v4 <- rmsd_pop_v4("ATM") %>% rename(ATM = "rmsd")
+rmsd_pop_BARD1_v4 <- rmsd_pop_v4("BARD1") %>% rename(BARD1 = "rmsd")
+rmsd_pop_BRCA1_v4 <- rmsd_pop_v4("BRCA1") %>% rename(BRCA1 = "rmsd")
+rmsd_pop_BRCA2_v4 <- rmsd_pop_v4("BRCA2") %>% rename(BRCA2 = "rmsd")
+rmsd_pop_CHEK2_v4 <- rmsd_pop_v4("CHEK2") %>% rename(CHEK2 = "rmsd")
+rmsd_pop_PALB2_v4 <- rmsd_pop_v4("PALB2") %>% rename(PALB2 = "rmsd")
+rmsd_pop_RAD51C_v4 <- rmsd_pop_v4("RAD51C") %>% rename(RAD51C = "rmsd")
+rmsd_pop_RAD51D_v4 <- rmsd_pop_v4("RAD51D") %>% rename(RAD51D = "rmsd")
+rmsd_pop_TP53_v4 <- rmsd_pop_v4("TP53") %>% rename(TP53 = "rmsd")
+
+inner_join(rmsd_pop_ATM, rmsd_pop_BARD1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_BRCA1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_BRCA2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_CHEK2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_PALB2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_RAD51C, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_RAD51D, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_TP53, by= "ClinVar Clinical Significance") %>% 
+  arrange(ATM) %>% write.csv(file = here("output/v4/csv files/rmsd/RMSD.csv"), row.names = F)
+```
+
+Wilcoxon function
+```{r}
+wilcoxon <- function(x,y,z){
+  rankscore_unique[[z]]<- as.numeric(rankscore_unique[[z]])
+  rankscore_unique %>% 
+    filter(gene==x) %>% 
+    filter(Clin_var_significance=="Uncertain"|Clin_var_significance==y) %>% 
+    filter(.data[[z]]!=".") %>% 
+    filter(!is.na(.data[[z]])) %>% 
+    rename("z"=.data[[z]]) %>% 
+    wilcox_test(z~Clin_var_significance) %>% 
+    add_column(gene = x, .before=".y.") %>% 
+    add_column(prediciton = z,.after ="gene") %>% 
+    unite(group, group1, group2) %>% 
+    select(-c(.y., n1, n2))}
+```
