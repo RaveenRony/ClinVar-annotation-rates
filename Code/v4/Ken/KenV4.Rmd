@@ -1,0 +1,917 @@
+
+Library of packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+library('corrr')
+library(ggcorrplot)
+library("FactoMineR")
+library(factoextra)
+library("ggExtra")
+```
+
+Input for Ken
+LiftOver from hg38 to hg19 and changing variant id to hgvs.g format
+```{r}
+variants_v4 <- gnomadv4_count %>% add_column(chr="chr") %>% unite(chr, chr, chromosome, sep="") %>% select(chr, position)
+
+chain_file_19 <- "D:/rcode/Rcode/work/Work/hg38ToHg19.over.chain" 
+chain_19 <- import.chain(chain_file_19)
+
+variants_gr <- GRanges(
+  seqnames = variants_v4$chr,
+  ranges = IRanges(start = variants_v4$position, end = variants_v4$position))
+
+hg19_v4 <- liftOver(variants_gr, chain_19) %>% as.data.frame() %>% select(seqnames, end, group) %>% rename("id" = "group")
+
+hg19_gnomad <- gnomadv4_count %>% mutate(id = row_number(),.before = "gene") %>% full_join(hg19_v4) %>% mutate(hg38 = paste(chromosome, position, reference, alternate, sep = "-")) %>% mutate(hg19 = paste(chromosome, end, reference, alternate, sep = "-"))  %>% select(hg38, hg19, gene, chromosome, position, end, reference, alternate, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range, transcript_consequence, protein_consequence, hgvs_consequence) %>% mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation))
+
+convert_variant_to_hgvs <- function(variant) {
+  parts <- strsplit(variant, "-")[[1]]
+  chromosome <- parts[1]
+  position <- as.numeric(parts[2])
+  reference <- parts[3]
+  alternate <- parts[4]
+
+  if (nchar(reference) > nchar(alternate)) {
+    if (nchar(reference) == 2 && nchar(alternate) == 1) {
+      del_position <- position + 1
+      return(paste0("chr", chromosome, ":g.", del_position, "del"))
+    } else {
+      start_del_position <- position + 1
+      end_del_position <- position + nchar(reference) - 1
+      return(paste0("chr", chromosome, ":g.", start_del_position, "_", end_del_position, "del"))
+    }
+  } else if (nchar(alternate) > nchar(reference)) {
+    start_ins_position <- position
+    end_ins_position <- position + 1
+    inserted_sequence <- substr(alternate, nchar(reference) + 1, nchar(alternate))
+    return(paste0("chr", chromosome, ":g.", start_ins_position, "_", end_ins_position, "ins", inserted_sequence))
+  } else if (nchar(reference) == nchar(alternate)) {
+    return(paste0("chr", chromosome, ":g.", position, reference, ">", alternate))
+  } else {
+    return("Not a recognized variant format")
+  }
+}
+
+convert_column_to_hgvs <- function(df, column_name) {
+  df %>% mutate(hgvsg = sapply(get(column_name), convert_variant_to_hgvs))}
+
+convert_column_to_hgvs(hg19_gnomad, "hg19") %>%
+  select(hg19, hgvsg) %>% 
+  write.csv(here("output/v4/ken/hgvsg.csv"))
+
+gnomadv4_hg19 <- convert_column_to_hgvs(hg19_gnomad, "hg19")
+
+read.csv(here("output/v4/ken/hgvsg_corrected.csv")) %>% select(hgvsg) %>% write.csv(here("output/v4/ken/variants-hg19.csv"), row.names = F)
+
+ken_input_v4 <- read.csv(here("output/v4/ken/hgvsg_corrected.csv"))
+```
+Output from Ken 
+```{r}
+oncokb_v4 <- read_tsv(here("data/v4/Ken/anno_gn.tsv"))
+assay_v4 <- read_tsv(here("data/v4/Ken/anno_myv.tsv"))
+```
+Filtering for rankscores between 0 and 1 for PCA
+```{r}
+ken_v4 <- full_join(hg19_gnomad, ken_input_v4, by = "hg19")
+pca_v4 <- full_join(ken_v4, assay_v4, by="hgvsg") %>% select(-c(cadd_consscore, cadd_rawscore, dbnsfp_list_s2_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_phastcons_30way_mammalian_rankscore, dbnsfp_phylop_30way_mammalian_rankscore, dbnsfp_siphy_29way_logodds_score, evs_grantham_score, mutdb_mutpred_score, gnomad_exome_af, gnomad_genome_af, exac_nontcga_af, exac_af, civic_actionscore, civic_clinvar_cnt, clinvar_accession, clinvar_sig, clinvar_origin, clinvar_name, clinvar_accession_0, clinvar_sig_0, clinvar_name_0, clinvar_accession_1, clinvar_sig_1, clinvar_name_1, clinvar_accession_2, clinvar_sig_2, clinvar_name_2, clinvar_accession_3, clinvar_name_3, clinvar_sig_3, clivar_origin_0, clivar_origin_1, clivar_origin_2, clivar_origin_3, dbnsfp_clinvar_sig))
+
+pca_v4 <- pca_v4 %>%
+  mutate(missing_count = rowSums(is.na(.))) %>%
+  arrange(hgvsg, missing_count) %>%                
+  distinct(hgvsg, .keep_all = TRUE) %>%           
+  select(-missing_count) 
+```
+
+ATM PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "ATM") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> atmv4_assay
+
+transposed_atmv4_assay <- as.data.frame(t(atmv4_assay))
+
+col_to_remv4 <- colSums(is.na(atmv4_assay))
+atmv4_pca <- rbind(atmv4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_atmv4_assay))
+transposed_atmv4_pca <- rbind(transposed_atmv4_assay, col_tremv4)
+rownames_to_column(transposed_atmv4_pca, var = "rankscore")
+transposed_atmv4_pca <- transposed_atmv4_pca %>% select(which(.[35, ] == 0))
+transposed_atmv4_pca <- transposed_atmv4_pca[-35,]
+transposed_atmv4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+atmv4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(atmv4_pca) <- atmv4_pca[1, ]
+atmv4_pca <- atmv4_pca[-1, ]
+atmv4_pca[] <- lapply(atmv4_pca, as.numeric)
+atmv4_pca <- atmv4_pca %>% drop_na()
+#2438/3063 variants having 33 rankscores
+
+atmv4_pca <- prcomp(atmv4_pca, center = T, scale. = T)
+fviz_eig(atmv4_pca, addlabels = T)
+
+pca_data <- as.data.frame(atmv4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_atmv4 <- read.table(here("data/PCA.txt"))
+
+pca_atmv4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/ATM.png"), width = 8, height = 6, dpi = 300)
+```
+
+BARD1 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "BARD1") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> bard1v4_assay
+
+transposed_bard1v4_assay <- as.data.frame(t(bard1v4_assay))
+
+col_to_remv4 <- colSums(is.na(bard1v4_assay))
+bard1v4_pca <- rbind(bard1v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_bard1v4_assay))
+transposed_bard1v4_pca <- rbind(transposed_bard1v4_assay, col_tremv4)
+rownames_to_column(transposed_bard1v4_pca, var = "rankscore")
+transposed_bard1v4_pca <- transposed_bard1v4_pca %>% select(which(.[35, ] == 0))
+transposed_bard1v4_pca <- transposed_bard1v4_pca[-35,]
+transposed_bard1v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+bard1v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(bard1v4_pca) <- bard1v4_pca[1, ]
+bard1v4_pca <- bard1v4_pca[-1, ]
+bard1v4_pca[] <- lapply(bard1v4_pca, as.numeric)
+bard1v4_pca <- bard1v4_pca %>% drop_na()
+#680/850 variants have 33 rankscores
+
+bard1v4_pca <- prcomp(bard1v4_pca, center = T, scale. = T)
+fviz_eig(bard1v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(bard1v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_bard1v4 <- read.table(here("data/PCA.txt"))
+
+pca_bard1v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/BARD1.png"), width = 8, height = 6, dpi = 300)
+```
+
+BRCA1 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "BRCA1") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> brca1v4_assay
+
+transposed_brca1v4_assay <- as.data.frame(t(brca1v4_assay))
+
+col_to_remv4 <- colSums(is.na(brca1v4_assay))
+brca1v4_pca <- rbind(brca1v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_brca1v4_assay))
+transposed_brca1v4_pca <- rbind(transposed_brca1v4_assay, col_tremv4)
+rownames_to_column(transposed_brca1v4_pca, var = "rankscore")
+transposed_brca1v4_pca <- transposed_brca1v4_pca %>% select(which(.[35, ] == 0))
+transposed_brca1v4_pca <- transposed_brca1v4_pca[-35,]
+transposed_brca1v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+brca1v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(brca1v4_pca) <- brca1v4_pca[1, ]
+brca1v4_pca <- brca1v4_pca[-1, ]
+brca1v4_pca[] <- lapply(brca1v4_pca, as.numeric)
+brca1v4_pca <- brca1v4_pca %>% drop_na()
+#1431/1831 variants with 33 rankscores
+
+brca1v4_pca <- prcomp(brca1v4_pca, center = T, scale. = T)
+fviz_eig(brca1v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(brca1v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_brca1v4 <- read.table(here("data/PCA.txt"))
+
+pca_brca1v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/BRCA1.png"), width = 8, height = 6, dpi = 300)
+```
+
+BRCA2 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "BRCA2") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> brca2v4_assay
+
+transposed_brca2v4_assay <- as.data.frame(t(brca2v4_assay))
+
+col_to_remv4 <- colSums(is.na(brca2v4_assay))
+brca2v4_pca <- rbind(brca2v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_brca2v4_assay))
+transposed_brca2v4_pca <- rbind(transposed_brca2v4_assay, col_tremv4)
+rownames_to_column(transposed_brca2v4_pca, var = "rankscore")
+transposed_brca2v4_pca <- transposed_brca2v4_pca %>% select(which(.[35, ] == 4))
+transposed_brca2v4_pca <- transposed_brca2v4_pca[-35,]
+transposed_brca2v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+brca2v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(brca2v4_pca) <- brca2v4_pca[1, ]
+brca2v4_pca <- brca2v4_pca[-1, ]
+brca2v4_pca[] <- lapply(brca2v4_pca, as.numeric)
+brca2v4_pca <- brca2v4_pca %>% drop_na()
+#2865/3497 variants having 29 rankscores
+
+brca2v4_pca <- prcomp(brca2v4_pca, center = T, scale. = T)
+fviz_eig(brca2v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(brca2v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_brca2v4 <- read.table(here("data/PCA.txt"))
+
+pca_brca2v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/BRCA2.png"), width = 8, height = 6, dpi = 300)
+```
+
+CHEK2 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "CHEK2") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> chek2v4_assay
+
+transposed_chek2v4_assay <- as.data.frame(t(chek2v4_assay))
+
+col_to_remv4 <- colSums(is.na(chek2v4_assay))
+chek2v4_pca <- rbind(chek2v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_chek2v4_assay))
+transposed_chek2v4_pca <- rbind(transposed_chek2v4_assay, col_tremv4)
+rownames_to_column(transposed_chek2v4_pca, var = "rankscore")
+transposed_chek2v4_pca <- transposed_chek2v4_pca %>% select(which(.[35, ] == 0))
+transposed_chek2v4_pca <- transposed_chek2v4_pca[-35,]
+transposed_chek2v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+chek2v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(chek2v4_pca) <- chek2v4_pca[1, ]
+chek2v4_pca <- chek2v4_pca[-1, ]
+chek2v4_pca[] <- lapply(chek2v4_pca, as.numeric)
+chek2v4_pca <- chek2v4_pca %>% drop_na()
+#435/656 variants having 33 rankscores
+
+chek2v4_pca <- prcomp(chek2v4_pca, scale. = T, center = T)
+fviz_eig(chek2v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(chek2v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_chek2v4 <- read.table(here("data/PCA.txt"))
+
+pca_chek2v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/CHEK2.png"), width = 8, height = 6, dpi = 300)
+```
+
+PALB2 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "PALB2") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> palb2v4_assay
+
+transposed_palb2v4_assay <- as.data.frame(t(palb2v4_assay))
+
+col_to_remv4 <- colSums(is.na(palb2v4_assay))
+palb2v4_pca <- rbind(palb2v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_palb2v4_assay))
+transposed_palb2v4_pca <- rbind(transposed_palb2v4_assay, col_tremv4)
+rownames_to_column(transposed_palb2v4_pca, var = "rankscore")
+transposed_palb2v4_pca <- transposed_palb2v4_pca %>% select(which(.[35, ] == 0))
+transposed_palb2v4_pca <- transposed_palb2v4_pca[-35,]
+transposed_palb2v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+palb2v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(palb2v4_pca) <- palb2v4_pca[1, ]
+palb2v4_pca <- palb2v4_pca[-1, ]
+palb2v4_pca[] <- lapply(palb2v4_pca, as.numeric)
+palb2v4_pca <- palb2v4_pca %>% drop_na()
+#1014/1238 variants having 33 variants
+
+palb2v4_pca <- prcomp(palb2v4_pca, center = T, scale. = T)
+fviz_eig(palb2v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(palb2v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_palb2v4 <- read.table(here("data/PCA.txt"))
+
+pca_palb2v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/PALB2.png"), width = 8, height = 6, dpi = 300)
+```
+
+RAD51C PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "RAD51C") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> rad51cv4_assay
+
+transposed_rad51cv4_assay <- as.data.frame(t(rad51cv4_assay))
+
+col_to_remv4 <- colSums(is.na(rad51cv4_assay))
+rad51cv4_pca <- rbind(rad51cv4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_rad51cv4_assay))
+transposed_rad51cv4_pca <- rbind(transposed_rad51cv4_assay, col_tremv4)
+rownames_to_column(transposed_rad51cv4_pca, var = "rankscore")
+transposed_rad51cv4_pca <- transposed_rad51cv4_pca %>% select(which(.[35, ] == 0))
+transposed_rad51cv4_pca <- transposed_rad51cv4_pca[-35,]
+transposed_rad51cv4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+rad51cv4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(rad51cv4_pca) <- rad51cv4_pca[1, ]
+rad51cv4_pca <- rad51cv4_pca[-1, ]
+rad51cv4_pca[] <- lapply(rad51cv4_pca, as.numeric)
+rad51cv4_pca <- rad51cv4_pca %>% drop_na()
+#326/492 variants having 33 rankscores
+
+rad51cv4_pca <- prcomp(rad51cv4_pca, scale. = T, center = T)
+fviz_eig(rad51cv4_pca, addlabels = T)
+
+pca_data <- as.data.frame(rad51cv4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_rad51cv4 <- read.table(here("data/PCA.txt"))
+
+pca_rad51cv4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/RAD51C.png"), width = 8, height = 6, dpi = 300)
+```
+
+RAD51D PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "RAD51D") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> rad51dv4_assay
+
+transposed_rad51dv4_assay <- as.data.frame(t(rad51dv4_assay))
+
+col_to_remv4 <- colSums(is.na(rad51dv4_assay))
+rad51dv4_pca <- rbind(rad51dv4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_rad51dv4_assay))
+transposed_rad51dv4_pca <- rbind(transposed_rad51dv4_assay, col_tremv4)
+rownames_to_column(transposed_rad51dv4_pca, var = "rankscore")
+transposed_rad51dv4_pca <- transposed_rad51dv4_pca %>% select(which(.[35, ] == 1))
+transposed_rad51dv4_pca <- transposed_rad51dv4_pca[-35,]
+transposed_rad51dv4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+rad51dv4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(rad51dv4_pca) <- rad51dv4_pca[1, ]
+rad51dv4_pca <- rad51dv4_pca[-1, ]
+rad51dv4_pca[] <- lapply(rad51dv4_pca, as.numeric)
+rad51dv4_pca <- rad51dv4_pca %>% drop_na()
+#240/462 variants having 32 rankscores
+
+rad51dv4_pca <- prcomp(rad51dv4_pca, center = T, scale. = T)
+fviz_eig(rad51dv4_pca, addlabels = T)
+
+pca_data <- as.data.frame(rad51dv4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_rad51dv4 <- read.table(here("data/PCA.txt"))
+
+pca_rad51dv4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/RAD51D.png"), width = 8, height = 6, dpi = 300)
+```
+
+TP53 PCA
+```{r}
+pca_v4 %>% 
+  filter(gene == "TP53") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, gene, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> tp53v4_assay
+
+transposed_tp53v4_assay <- as.data.frame(t(tp53v4_assay))
+
+col_to_remv4 <- colSums(is.na(tp53v4_assay))
+tp53v4_pca <- rbind(tp53v4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_tp53v4_assay))
+transposed_tp53v4_pca <- rbind(transposed_tp53v4_assay, col_tremv4)
+rownames_to_column(transposed_tp53v4_pca, var = "rankscore")
+transposed_tp53v4_pca <- transposed_tp53v4_pca %>% select(which(.[35, ] == 0))
+transposed_tp53v4_pca <- transposed_tp53v4_pca[-35,]
+transposed_tp53v4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+tp53v4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(tp53v4_pca) <- tp53v4_pca[1, ]
+tp53v4_pca <- tp53v4_pca[-1, ]
+tp53v4_pca[] <- lapply(tp53v4_pca, as.numeric)
+tp53v4_pca <- tp53v4_pca %>% drop_na()
+#296/431 variants having 33 rankscores
+
+tp53v4_pca <- prcomp(tp53v4_pca, scale. = T, center = T)
+fviz_eig(tp53v4_pca, addlabels = T)
+
+pca_data <- as.data.frame(tp53v4_pca[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_tp53v4 <- read.table(here("data/PCA.txt"))
+
+pca_tp53v4 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/v4/PCA/TP53.png"), width = 8, height = 6, dpi = 300)
+```
+
+All genes PCA
+Number of common rankscores prioritised over number of variants
+```{r} 
+pca_v4 %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, gene, hgvsg, clin_var_clinical_significance, sep = ", ") -> gnomadv4_assay
+
+transposed_gnomadv4_assay <- as.data.frame(t(gnomadv4_assay))
+
+col_to_remv4 <- colSums(is.na(gnomadv4_assay))
+gnomadv4_pca <- rbind(gnomadv4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_gnomadv4_assay))
+transposed_gnomadv4_pca <- rbind(transposed_gnomadv4_assay, col_tremv4)
+rownames_to_column(transposed_gnomadv4_pca, var = "rankscore")
+transposed_gnomadv4_pca <- transposed_gnomadv4_pca %>% select(which(.[35, ] == 0|.[35, ] == 1|.[35, ] == 4))
+transposed_gnomadv4_pca <- transposed_gnomadv4_pca[-35,]
+transposed_gnomadv4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+gnomadv4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(gnomadv4_pca) <- gnomadv4_pca[1, ]
+gnomadv4_pca <- gnomadv4_pca[-1, ]
+gnomadv4_pca[] <- lapply(gnomadv4_pca, as.numeric)
+gnomadv4_pca <- gnomadv4_pca %>% drop_na()
+#9827/12520 variants having 24 rankscores
+
+pca_result <- prcomp(gnomadv4_pca, center = TRUE, scale. = TRUE)
+fviz_eig(pca_result, addlabels = T)
+
+pca_data <- as.data.frame(pca_result[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_gnomadv4 <- read.table(here("data/PCA.txt"))
+
+pca_gnomadv4_modified_rank <- pca_gnomadv4 %>%
+  separate(V1, c("gene", "variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig))
+
+pca_v4_gnomad <- ggplot(pca_gnomadv4_modified_rank, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank()) +
+  geom_point() +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2)
+
+ggMarginal(pca_v4_gnomad, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/gnomadv4-rankscores.png"), width = 8, height = 6, dpi = 300)
+```
+Number of variants prioritised over number of common rankscores
+```{r}
+pca_v4 %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19, population)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, gene, hgvsg, clin_var_clinical_significance, sep = ", ") -> gnomadv4_assay
+
+transposed_gnomadv4_assay <- as.data.frame(t(gnomadv4_assay))
+
+col_to_remv4 <- colSums(is.na(gnomadv4_assay))
+gnomadv4_pca <- rbind(gnomadv4_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_gnomadv4_assay))
+transposed_gnomadv4_pca <- rbind(transposed_gnomadv4_assay, col_tremv4)
+rownames_to_column(transposed_gnomadv4_pca, var = "rankscore")
+transposed_gnomadv4_pca <- transposed_gnomadv4_pca %>% select(-which(.[35, ] == 33))
+transposed_gnomadv4_pca <- transposed_gnomadv4_pca[-35,]
+transposed_gnomadv4_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+gnomadv4_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(gnomadv4_pca) <- gnomadv4_pca[1, ]
+gnomadv4_pca <- gnomadv4_pca[-1, ]
+gnomadv4_pca[] <- lapply(gnomadv4_pca, as.numeric)
+gnomadv4_pca <- gnomadv4_pca %>% drop_na()
+#11047/12520 variants having 12 rankscores
+
+pca_result <- prcomp(gnomadv4_pca, center = TRUE, scale. = TRUE)
+fviz_eig(pca_result, addlabels = T)
+
+pca_data <- as.data.frame(pca_result[["rotation"]])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_gnomadv4 <- read.table(here("data/PCA.txt"))
+
+pca_gnomadv4_modified <- pca_gnomadv4 %>%
+  separate(V1, c("gene", "variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig))
+
+pca_v4_gnomad_var <- ggplot(pca_gnomadv4_modified, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Prinicipal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank()) +
+  geom_point() +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign")) +
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"))
+
+ggMarginal(pca_v4_gnomad_var, type = "boxplot", margins = "both", groupFill = T, groupColour = T)
+ggsave(here("output/v4/PCA/gnomadv4-var.png"), width = 8, height = 6, dpi = 300)
+```
+
+OncoKB Analysis
+```{r}
+oncokb_v4 %>% unite(hgvsg, variant, sep="") %>% full_join(ken_v4, by="hgvsg") %>% filter(clin_var_clinical_significance=="Unreported") %>% select(gene.x, hgvsg, population, vep_annotation, okb_oncogenic) %>% write.csv(here("output/v4/csv files/oncokb_status.csv"))
+
+oncokb_v4 %>% unite(hgvsg, variant, sep="") %>% full_join(ken_v4, by="hgvsg") %>% filter(clin_var_clinical_significance=="Unreported")
+
+oncokb_v4 %>% unite(hgvsg, variant, sep="") %>% full_join(ken_v4, by="hgvsg") %>% filter(clin_var_clinical_significance=="Unreported", okb_oncogenic=="Likely Oncogenic") %>% select(gene.x, hgvsg, population, vep_annotation, okb_summary) %>% write.csv(here("output/v4/csv files/oncokb_oncogenic_population.csv"))
+
+oncokb_v4 %>% unite(hgvsg, variant, sep="") %>% full_join(ken_v4, by="hgvsg") %>% filter(clin_var_clinical_significance=="Unreported", okb_oncogenic=="Unknown") %>% group_by(gene.x) %>% rename(gene = gene.x) %>% count(population) %>% mutate(percent = (round((n/sum(n))*100,2))) %>% 
+  ggplot(aes(x= gene, y= percent, fill= population)) + 
+  geom_col(alpha= 0.7, colour = "black") +
+  scale_fill_manual(values = c("AFR" = "#800080", 
+                               "AMR" = "darkgreen", 
+                               "NFE" = "gray", 
+                               "EAS" = "navy",
+                               "SAS" = "darkred"))
+ggsave(here("output/v4/oncokb_unknown.png"), height = 6, width = 8, dpi = 300)
+```
+
+Proportion of unreported variants in OncoKB in GnomAD (Figures)
+```{r}
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(clin_var_clinical_significance=="Unreported") %>% filter(!is.na(okb_oncogenic)) %>% unite(test, gene.x, population) %>% group_by(test) %>% count(okb_oncogenic) %>% summarise(total = sum(n, na.rm = TRUE)) %>% separate(test, into = c("gene", "population"), sep = "_") -> oncokbv4_total
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_total) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_okb, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 75) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_oncokb.png"), dpi=300, width=8, height=6)
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(clin_var_clinical_significance=="Unreported") %>% filter(vep_annotation=="splice_site_variant"| vep_annotation=="frameshift_variant"| vep_annotation=="stop_gained") %>%  filter(!is.na(okb_oncogenic)) %>% unite(test, gene.x, population) %>% group_by(test) %>% count(okb_oncogenic) %>% summarise(total = sum(n, na.rm = TRUE)) %>% separate(test, into = c("gene", "population"), sep = "_") -> oncokbv4_unr_comb
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  filter(vep_annotation=="splice_site_variant"| vep_annotation=="frameshift_variant"| vep_annotation=="stop_gained") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_unr_comb) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_okb, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_unr_comb_oncokb.png"), dpi=300, width=8, height=6)
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(clin_var_clinical_significance=="Unreported") %>% filter(vep_annotation=="missense_variant") %>%  filter(!is.na(okb_oncogenic)) %>% unite(test, gene.x, population) %>% group_by(test) %>% count(okb_oncogenic) %>% summarise(total = sum(n, na.rm = TRUE)) %>% separate(test, into = c("gene", "population"), sep = "_") -> oncokbv4_unr_missense
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_unr_missense) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_okb, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 50) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_unr_missense_oncokb.png"), dpi=300, width=8, height=6)
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(vep_annotation=="splice_site_variant"| vep_annotation=="frameshift_variant"| vep_annotation=="stop_gained") %>%  filter(!is.na(okb_oncogenic)) %>% unite(test, gene.x, population) %>% group_by(test) %>% count(okb_oncogenic) %>% summarise(total = sum(n, na.rm = TRUE)) %>% separate(test, into = c("gene", "population"), sep = "_") -> oncokbv4_comb
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% 
+  filter(vep_annotation=="splice_site_variant"| vep_annotation=="frameshift_variant"| vep_annotation=="stop_gained") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_comb) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_okb, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_comb_oncokb.png"), dpi=300, width=8, height=6)
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(vep_annotation=="missense_variant") %>%  filter(!is.na(okb_oncogenic)) %>% unite(test, gene.x, population) %>% group_by(test) %>% count(okb_oncogenic) %>% summarise(total = sum(n, na.rm = TRUE)) %>% separate(test, into = c("gene", "population"), sep = "_") -> oncokbv4_missense
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_missense) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_okb, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_missense_oncokb.png"), dpi=300, width=8, height=6)
+```
+
+Proportion of unreported variants in OncoKB in GnomAD (Tables)
+```{r}
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_total) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  write_csv(here("output/csv files/Unreported_OncoKB.csv"))
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  filter(vep_annotation=="splice_site_variant"| vep_annotation=="frameshift_variant"| vep_annotation=="stop_gained") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_unr_comb) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  write_csv(here("output/csv files/Unreported_combined_variants_OncoKB.csv"))
+
+gnomadv4_hg19 %>% rename("gnom_ad_id"="hg38") %>% select(gnom_ad_id, hgvsg) %>% full_join(gnomadv4_count, by="gnom_ad_id") %>% select(gnom_ad_id, hgvsg, gene, population, vep_annotation, clin_var_clinical_significance, allele_count, count_range) %>% rename("variant"="hgvsg") %>% full_join(oncokb_v4, by="variant") %>% filter(!is.na(okb_oncogenic)) %>% select(-gene.y) %>%
+  rename("gene"="gene.x") %>% filter(clin_var_clinical_significance=="Unreported") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(okb_oncogenic) %>%
+  ungroup() %>%
+  complete(test, okb_oncogenic, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("Unknown", okb_oncogenic, ignore.case = TRUE)) %>%
+  summarise(in_okb = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(oncokbv4_unr_missense) %>% 
+  mutate(percent_in_okb = round((in_okb/total)*100,2)) %>% 
+  write_csv(here("output/csv files/Unreported_missense_variants_OncoKB.csv"))
+```
+
