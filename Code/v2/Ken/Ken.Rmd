@@ -1,0 +1,565 @@
+gnomAD - Variants changed to HGVS.g format for Ken to collect more data from different databases to validate variants.
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+
+Pathogenic <- c(Pathogenic, "Likely_pathogenic", "Pathogenic/Likely_pathogenic")
+Benign <- c(Benign, "Benign/Likely_benign", "Likely_benign")
+Uncertain <- c(Uncertain, "Conflicting_interpretations_of_pathogenicity", "Uncertain_significance")
+```
+
+Input for Ken Doig
+BRCA1, BRCA2 (2578)
+```{r}
+convert_variant_to_hgvs <- function(variant) {
+  parts <- strsplit(variant, "-")[[1]]
+  chromosome <- parts[1]
+  position <- as.numeric(parts[2])
+  reference <- parts[3]
+  alternate <- parts[4]
+
+  if (nchar(reference) > nchar(alternate)) {
+    if (nchar(reference) == 2 && nchar(alternate) == 1) {
+      del_position <- position + 1
+      return(paste0("chr", chromosome, ":g.", del_position, "del"))
+    } else {
+      start_del_position <- position + 1
+      end_del_position <- position + nchar(reference) - 1
+      return(paste0("chr", chromosome, ":g.", start_del_position, "_", end_del_position, "del"))
+    }
+  } else if (nchar(alternate) > nchar(reference)) {
+    start_ins_position <- position
+    end_ins_position <- position + 1
+    inserted_sequence <- substr(alternate, nchar(reference) + 1, nchar(alternate))
+    return(paste0("chr", chromosome, ":g.", start_ins_position, "_", end_ins_position, "ins", inserted_sequence))
+  } else if (nchar(reference) == nchar(alternate)) {
+    return(paste0("chr", chromosome, ":g.", position, reference, ">", alternate))
+  } else {
+    return("Not a recognized variant format")
+  }
+}
+
+convert_column_to_hgvs <- function(df, column_name) {
+  df %>% mutate(hgvsg = sapply(get(column_name), convert_variant_to_hgvs))}
+
+gnomad_unique_all %>% 
+  rename("gene"="chromosome")%>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene,
+         Population = case_when(Population=="afr" ~ "African_american",
+                                Population=="lat" ~ "Latino_admixed_american",
+                                Population=="euro" ~ "Non_finnish_european",
+                                Population=="ea" ~ "East_asian",
+                                Population=="sa" ~ "South_asian"),
+         clin_var_clinical_significance=case_when(is.na(clin_var_clinical_significance)~"Not_annotated",
+                                                  TRUE~clin_var_clinical_significance)) %>% 
+  filter(gene=="brca1"|gene=="brca2") %>% 
+  select(gene, chromosome, position, reference, alternate, rs_i_ds, clin_var_clinical_significance, Population, vep_annotation) -> ken_testing
+
+write.csv(ken_testing, file=here("output/rs_i_ds.csv"), sep = "\t", row.names = F, col.names = F)
+
+ken_test <- ken_testing %>% unite(variant_id, chromosome, position, reference, alternate, sep="-")
+
+convert_column_to_hgvs(ken_test, "variant_id")
+
+ken_brca <- convert_column_to_hgvs(ken_test, "variant_id")
+ken_brca %>% write.csv(here("output/ken/brca.csv"))
+```
+
+ATM (1325)
+```{r}
+gnomad_unique_all %>% 
+  rename("gene"="chromosome")%>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene,
+         Population = case_when(Population=="afr" ~ "African_american",
+                                Population=="lat" ~ "Latino_admixed_american",
+                                Population=="euro" ~ "Non_finnish_european",
+                                Population=="ea" ~ "East_asian",
+                                Population=="sa" ~ "South_asian"),
+         clin_var_clinical_significance=case_when(is.na(clin_var_clinical_significance)~"Not_annotated",
+                                                  TRUE~clin_var_clinical_significance)) %>% 
+  filter(gene=="atm") %>% 
+  select(gene, chromosome, position, reference, alternate, rs_i_ds, clin_var_clinical_significance, Population, vep_annotation) %>% 
+  unite(variant_id, chromosome, position, reference, alternate, sep="-") -> ken_testing_atm
+
+ken_atm <- convert_column_to_hgvs(ken_testing_atm, "variant_id")
+ken_atm %>% write.csv(here("output/ken/atm.csv"))
+```
+
+BARD1 CHEK2 PALB2 (1268)
+```{r}
+gnomad_unique_all %>% 
+  rename("gene"="chromosome")%>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene,
+         Population = case_when(Population=="afr" ~ "African_american",
+                                Population=="lat" ~ "Latino_admixed_american",
+                                Population=="euro" ~ "Non_finnish_european",
+                                Population=="ea" ~ "East_asian",
+                                Population=="sa" ~ "South_asian"),
+         clin_var_clinical_significance=case_when(is.na(clin_var_clinical_significance)~"Not_annotated",
+                                                  TRUE~clin_var_clinical_significance)) %>% 
+  filter(gene=="bard1"|gene=="palb2"|gene=="chek2") %>% 
+  select(gene, chromosome, position, reference, alternate, rs_i_ds, clin_var_clinical_significance, Population, vep_annotation) %>% 
+  unite(variant_id, chromosome, position, reference, alternate, sep="-") -> ken_testing_bard1_chek2_palb2
+
+ken_bard1_chek2_palb2 <- convert_column_to_hgvs(ken_testing_bard1_chek2_palb2, "variant_id")
+ken_bard1_chek2_palb2 %>% write.csv(here("output/ken/bard1_chek2_palb2.csv"))
+```
+
+RAD51C RAD51D TP53 (598)
+```{r}
+gnomad_unique_all %>% 
+  rename("gene"="chromosome")%>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene,
+         Population = case_when(Population=="afr" ~ "African_american",
+                                Population=="lat" ~ "Latino_admixed_american",
+                                Population=="euro" ~ "Non_finnish_european",
+                                Population=="ea" ~ "East_asian",
+                                Population=="sa" ~ "South_asian"),
+         clin_var_clinical_significance=case_when(is.na(clin_var_clinical_significance)~"Not_annotated",
+                                                  TRUE~clin_var_clinical_significance)) %>% 
+  filter(gene=="tp53"|gene=="rad51c"|gene=="rad51d") %>% 
+  select(gene, chromosome, position, reference, alternate, rs_i_ds, clin_var_clinical_significance, Population, vep_annotation) %>% 
+  unite(variant_id, chromosome, position, reference, alternate, sep="-") -> ken_testing_rad51c_d_tp53
+
+ken_rad51c_d_tp53 <- convert_column_to_hgvs(ken_testing_rad51c_d_tp53, "variant_id")
+ken_rad51c_d_tp53 %>% write.csv(here("output/ken/rad51c_d_tp53.csv"))
+```
+
+Analysis
+BRCA1 BRCA2
+Ken files
+```{r}
+alpha_mis <- clean_names(read_tsv(here("data/Ken/alpha_mis.tsv"), col_names = F))
+assay <- clean_names(read_tsv(here("data/Ken/assay.myv.tsv")))
+cosmic <- clean_names(read_tsv(here("data/Ken/cosmic_cmc.tsv"))) %>% rename("hgvsc" = "mutation_cds")
+gn_anno <- clean_names(read_tsv(here("data/Ken/gn_anno.tsv")))
+pathos <- clean_names(read_tsv(here("data/Ken/pathos_annot.tsv")))
+Input <- read.table(file = here("data/hgvs.txt")) %>% rename("hgvsg" = "V1")
+```
+PCA & ONCOKB
+```{r}
+oncokb <- gn_anno %>% add_column(chr= "chr") %>% unite(hgvsg, chr, variant, sep = "")
+inner_join(oncokb, ken_brac, by = "hgvsg") %>% select(-c(gene.y))
+
+pca <- inner_join(ken, assay)
+```
+Others cross ref
+```{r}
+gn_anno #all unique
+cosmic %>% count(mutation_aa, sort = T)
+pathos %>% count(hgvsg,sort=T) #1404 unique entries, Need to compare how many variants appeared in gnomad and not in pathos(Reportable extracted, the gnomad data, merged to pathos)
+ken_brca #2578 unique entries given
+
+pathos %>% inner_join(ken_brca, by="hgvsg") %>% count(Population)
+full_join(cosmic, pathos) -> cosOs
+```
+OncoKB
+```{r}
+#BRCA1
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="BRCA1") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#BRCA2
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="BRCA2") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised,x=clin_sig)) +
+  geom_col(colour="black") + 
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen", 
+                               "Resistance" = "purple")) +
+  labs(fill = "OncoKB annotation", y = "Percentage", title = "gnomAD variants of BRCA2 with oncoKB annotations", x = "ClinVar Clinical Significance")
+```
+
+Rest of the variants
+Data loading together
+```{r}
+gn_rest <- clean_names(read_tsv(here("data/Ken/rest/gn_anno.tsv")))
+gn_anno <- full_join(gn_anno, gn_rest)
+cosmic_rest <- clean_names(read_tsv(here("data/Ken/rest/cosmic_cmc.tsv")))
+cosmic <- full_join(cosmic, cosmic_rest)
+assay_rest <- clean_names(read_tsv(here("data/Ken/rest/assay.myv.tsv")))
+assay <- full_join(assay, assay_rest)
+```
+OncoKB
+```{r}
+#ATM
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="ATM") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#BARD1
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="BARD1") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#BRCA1
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="BRCA1") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#BRCA2
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="BRCA2") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised,x=clin_sig)) +
+  geom_col(colour="black") + 
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen", 
+                               "Resistance" = "purple")) +
+  labs(fill = "OncoKB annotation", y = "Percentage", title = "gnomAD variants of BRCA2 with oncoKB annotations", x = "ClinVar Clinical Significance")
+
+#CHEK2
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="CHEK2") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#PALB2
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="PALB2") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of BRCA1 with oncoKB annotations", fill = "OncoKB annotation")
+
+#RAD51C
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="RAD51C") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of RAD51C with oncoKB annotations", fill = "OncoKB annotation")
+
+#RAD51D
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="RAD51D") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of RAD51D with oncoKB annotations", fill = "OncoKB annotation")
+
+#TP53
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(gene=="TP53") %>% 
+  unite(test, gene, clin_sig, sep = " ") %>%
+  group_by(test) %>%
+  count(okb_oncogenic) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig),
+         okb_oncogenic = case_when(is.na(okb_oncogenic) ~ "Unreported", T ~ okb_oncogenic)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=okb_oncogenic, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") +
+  scale_fill_manual(values = c("Unknown" = "darkgray",
+                               "Oncogenic" = "darkred",
+                               "Likely Oncogenic" = "red",
+                               "Likely Neutral" = "lightblue",
+                               "Inconclusive" = "darkgreen",
+                               "Unreported" = "black")) +
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "gnomAD variants of TP53 with oncoKB annotations", fill = "OncoKB annotation")
+```
+Unknown OncoKB
+```{r}
+gn_anno %>% 
+  mutate(clin_sig = case_when(clin_sig %in% Pathogenic ~ "Pathogenic", 
+                              clin_sig %in% Uncertain ~ "Uncertain", 
+                              clin_sig %in% Benign ~ "Benign", 
+                              clin_sig=="not_provided" ~ "Not_annotated",
+                              is.na(clin_sig) ~ "Not_annotated",
+                              TRUE~clin_sig)) %>%
+  add_column("chr"= "chr",.before = "variant") %>% 
+  unite(variant, chr, variant, sep="") %>%
+  filter(okb_oncogenic == "Unknown") %>% 
+  group_by(gene) %>%
+  count(clin_sig) %>% 
+  group_by(clin_sig) %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Not Annotated", TRUE~ clin_sig)) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(fill=gene, y=normalised, x=clin_sig)) +
+  geom_col(colour="black") + 
+  scale_fill_manual(values = c("ATM" = "#008080",
+                               "BARD1" = "darkorange",
+                               "BRCA1" = "blue",
+                               "BRCA2" = "darkred",
+                               "CHEK2" = "grey",
+                               "PALB2" = "yellow",
+                               "RAD51C" = "green",
+                               "RAD51D" = "cyan",
+                               "TP53" = "magenta"))
+  labs(x = "ClinVar Clinical Significance", y = "Percentage", title = "Percentage of variants with unknown annotations in OncoKB", fill = "Gene")
+```
+PCA
+```{r}
+ken <- full_join(ken_atm, ken_bard) %>% full_join(ken_rads) %>% full_join(ken_brca)
+assay
+pca <- inner_join(assay, ken)
+```
+Cosmic & Pathos
+```{r}
+cosmic %>% rename("gene" = "gene_name") %>% full_join(pathos, by = c("gene", "hgvsc")) -> cosOs
+cosOs %>% drop_na(hgvsg) %>% filter(reportable == "\001") %>% count(hgvsg, sort=T)
+```
+320 variants reported on PathOS and COSMIC with multiple being detected by different seqruns and samples.
+
