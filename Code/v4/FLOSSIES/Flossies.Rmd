@@ -1,0 +1,214 @@
+
+Library of packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+library('corrr')
+library(ggcorrplot)
+library("FactoMineR")
+library(factoextra)
+library(rtracklayer)
+library(GenomicRanges)
+```
+
+Loading Flossies data - 30th April 2024
+```{r}
+flossiesv2 <- full_join(read.csv(here("data/v4/Flossies/ATM.csv")), read.csv(here("data/v4/Flossies/BARD1.csv"))) %>%
+  full_join(read.csv(here("data/v4/Flossies/BRCA1.csv"))) %>% 
+  full_join(read.csv(here("data/v4/Flossies/BRCA2.csv"))) %>%
+  full_join(read.csv(here("data/v4/Flossies/CHEK2.csv"))) %>% 
+  full_join(read.csv(here("data/v4/Flossies/PALB2.csv"))) %>% 
+  full_join(read.csv(here("data/v4/Flossies/RAD51C.csv"))) %>% 
+  full_join(read.csv(here("data/v4/Flossies/RAD51D.csv"))) %>% 
+  full_join(read.csv(here("data/v4/Flossies/TP53.csv"))) %>% 
+  clean_names() %>% 
+  mutate(alternate = case_when(alternate == "" ~ "-", T ~ alternate),
+         reference = case_when(reference == "" ~ "-", T ~ reference)) %>% 
+  mutate(dbnsfp = paste(chrom, position, reference, alternate))
+```
+
+Converting Flossies data to hgvs.g format
+```{r}
+convert_flossies_to_hgvs <- function(variant) {  parts <- strsplit(variant, " ")[[1]]
+  chromosome <- parts[1]
+  position <- as.numeric(parts[2])
+  reference <- parts[3]
+  alternate <- parts[4]
+  #del
+  if (alternate == "-"){
+    if (nchar(reference) == nchar(alternate)) {
+      del_position <- position
+      return(paste0("chr",chromosome, ":g.", del_position, "del"))
+    } else {
+      start_del_position <- position
+      end_del_position <- position + nchar(reference)
+      return(paste0("chr", chromosome, ":g.", start_del_position, "_", end_del_position, "del"))
+    } 
+  } else
+    #ins
+    if (reference=="-"){
+      start_ins_position <- position
+      end_ins_position <- position + 1
+      return(paste0("chr", chromosome, ":g.", start_ins_position, "_", end_ins_position, "ins", alternate))}else 
+  if (nchar(reference) == nchar(alternate)) {
+    return(paste0("chr", chromosome, ":g.", position, reference, ">", alternate))
+  } else {
+    return("Not a recognized variant format")
+  }
+}
+
+convert_flcolumn_to_hgvs <- function(df, column_name) {
+  df %>% mutate(hgvsg = sapply(get(column_name), convert_flossies_to_hgvs))}
+
+flossiesv4 <- convert_flcolumn_to_hgvs(flossiesv2, "dbnsfp") %>% select(-c(chrom, position, reference, alternate))
+```
+
+Distribution of Flossies data in GnomAD
+```{r}
+gnomadv4_hg19 %>% 
+  inner_join(flossiesv4, by="hgvsg") %>% 
+  group_by(gene) %>% 
+  count(population) %>% 
+  mutate(percent = (round((n/sum(n))*100,2))) %>% 
+  ggplot(aes(x= gene, y= percent, fill= population)) + 
+  geom_col(alpha= 0.7, colour = "black") +
+  scale_fill_manual(values = c("AFR" = "#800080", 
+                               "AMR" = "darkgreen", 
+                               "NFE" = "gray", 
+                               "EAS" = "navy",
+                               "SAS" = "darkred"))
+
+gnomadv4_hg19 %>% 
+  inner_join(flossiesv4, by="hgvsg") %>% 
+  select(gene, dbnsfp, population, clin_var_clinical_significance) %>% 
+  count(clin_var_clinical_significance)
+
+gnomadv4_hg19 %>% 
+  inner_join(flossiesv4, by="hgvsg") %>% 
+  select(gene, dbnsfp, population, clin_var_clinical_significance, vep_annotation) %>% 
+  filter(clin_var_clinical_significance=="Unreported") %>% 
+  write.csv(here("output/v4/csv files/flossies_unreported_variants.csv"))
+```
+
+Proportion of variants in Flossies that are in GnomAD (Figures)
+```{r}
+gnomadv4_hg19 %>% 
+  inner_join(flossiesv4, by="hgvsg") %>% 
+  add_column(FLOSSIES = "Reported") %>% 
+  select(hg38, FLOSSIES) -> flossies_reported
+
+ognomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>%
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  ggplot(aes(x=population,y=percent_in_flossies, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 15) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_flossies.png"), width = 8, height = 6, dpi = 300)
+
+gnomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>% filter(vep_annotation=="frameshift_variant"| vep_annotation=="splice_site_variant"| vep_annotation=="stop_gained") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  ggplot(aes(x=population,y=percent_in_flossies, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 15) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_flossies_combined.png"), width = 8, height = 6, dpi = 300)
+
+gnomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>% filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  ggplot(aes(x=population,y=percent_in_flossies, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 15) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/fig2_flossies_missense.png"), width = 8, height = 6, dpi = 300)
+```
+
+Proportion of variants in Flossies that are in GnomAD (Tables)
+```{r}
+gnomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>%
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  write_csv(here("output/csv files/Unreported_FLOSSIES.csv"))
+
+gnomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>% filter(vep_annotation=="frameshift_variant"| vep_annotation=="splice_site_variant"| vep_annotation=="stop_gained") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  write_csv(here("output/csv files/Unreported_combined_variants_FLOSSIES.csv"))
+
+gnomadv4_count %>% rename("hg38" = "gnom_ad_id") %>% full_join(flossies_reported, by = "hg38") %>% 
+  replace_na(list(FLOSSIES = "Unreported")) %>% filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(FLOSSIES) %>% 
+  pivot_wider(names_from = "FLOSSIES", values_from = "n") %>% 
+  replace_na(list(Reported=0)) %>% 
+  mutate(percent_in_flossies = round(((Reported/(Reported+Unreported))*100),2)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ")%>% 
+  write_csv(here("output/csv files/Unreported_missense_variants_FLOSSIES.csv"))
+```
+
