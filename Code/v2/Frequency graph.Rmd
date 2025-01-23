@@ -1,0 +1,3572 @@
+gnomAD - Allele count/frequency graphs created to show rarity of variant in population
+Packages used
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+
+Change to Allele counts (0-1,2-3,4-10,11-100,100+)
+```{r}
+gnomad_freq <- gnomad_unique_all %>% 
+  rename("gene"="chromosome")%>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene,
+         Population = case_when(Population=="afr" ~ "African_american",
+                                Population=="lat" ~ "Latino_admixed_american",
+                                Population=="euro" ~ "Non_finnish_european",
+                                Population=="ea" ~ "East_asian",
+                                Population=="sa" ~ "South_asian"),
+         clin_var_clinical_significance=case_when(is.na(clin_var_clinical_significance)~"Blank",
+                                                  TRUE~clin_var_clinical_significance)) %>% 
+  mutate(freq_allele = ifelse(allele_count_african_african_american!=0,
+                              allele_count/allele_number_african_african_american,
+                              ifelse(allele_count_latino_admixed_american!=0,
+                                     allele_count/allele_number_latino_admixed_american,
+                                     ifelse(allele_count_european_non_finnish!=0,
+                                            allele_count/allele_number_european_non_finnish,
+                                            ifelse(allele_count_east_asian!=0,
+                                                   allele_count/allele_number_east_asian,
+                                                   ifelse(allele_count_south_asian!=0,
+                                                          allele_count/allele_number_south_asian,0)))))
+         ,.after = allele_number) %>% 
+  mutate(freq_log = (log10(freq_allele)),.after=freq_allele)
+```
+
+#Allele frequency graphs 
+Histograms
+ATM
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="atm") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +  
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +  
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Non_finnish_european") %>%
+   ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/atm/atm_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BARD1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="bard1") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/bard1/bard1_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/bard1/bard1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/bard1/bard1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/bard1/bard1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/bard1/bard1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/bard1/bard1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca1") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca1/brca1_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/brca1/brca1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca1/brca1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca1/brca1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca1/brca1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca1/brca1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca2/brca2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/brca2/brca2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca2/brca2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca2/brca2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca2/brca2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/brca2/brca2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+CHEK2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="chek2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/chek2/chek2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/chek2/chek2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/chek2/chek2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/chek2/chek2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/chek2/chek2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/chek2/chek2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+PALB2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="palb2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/palb2/palb2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/palb2/palb2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/palb2/palb2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/palb2/palb2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/palb2/palb2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/palb2/palb2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51C
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51c") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51c/rad51c_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/rad51c/rad51c_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51c/rad51c_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51c/rad51c_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51c/rad51c_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51c/rad51c_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51D
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51d") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51d/rad51d_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/rad51d/rad51d_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51d/rad51d_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51d/rad51d_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51d/rad51d_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/rad51d/rad51d_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+TP53
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="tp53") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/tp53/tp53_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+
+ggsave(here("output/Freq hist/tp53/tp53_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/tp53/tp53_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/tp53/tp53_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour = "black") +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/tp53/tp53_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_histogram(position = "dodge", colour = "black")+
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq hist/tp53/tp53_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+
+Normalised
+ATM
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="atm") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/atm/atm_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BARD1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="bard1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/bard1/bard1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca1/brca1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/brca2/brca2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+CHEK2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="chek2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/chek2/chek2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+PALB2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="palb2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/palb2/palb2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51C
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51c") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51c/rad51c_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51D
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51d") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/rad51d/rad51d_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+TP53
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="tp53") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_all_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_afr_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_lat_histo.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_ea_histo.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_histogram(position = "dodge", colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/tp53/tp53_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+
+Density graph
+ATM
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="atm") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/atm/atm_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BARD1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="bard1") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/bard1/bard1_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca1") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca1/brca1_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/brca2/brca2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+CHEK2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="chek2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/chek2/chek2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+PALB2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="palb2") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/palb2/palb2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51C
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51c") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51c/rad51c_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51D
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51d") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/rad51d/rad51d_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+TP53
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="tp53") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="African_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Latino_admixed_american") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Non_finnish_european") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="East_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="South_asian") %>%
+  ggplot(aes(x=freq_log, fill=clin_var_clinical_significance)) +  
+  geom_density(alpha= 0.6) +
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Blank" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq density/tp53/tp53_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+
+Normal density
+ATM
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="atm") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="atm",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/atm/atm_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BARD1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="bard1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="bard1",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/bard1/bard1_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA1
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca1") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca1",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca1/brca1_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+BRCA2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="brca2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="brca2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/brca2/brca2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+CHEK2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="chek2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="chek2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/chek2/chek2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+PALB2
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="palb2") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="palb2",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/palb2/palb2_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51C
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51c") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51c",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51c/rad51c_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+RAD51D
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="rad51d") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="rad51d",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/rad51d/rad51d_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+TP53
+```{r}
+#All populations
+gnomad_freq %>% 
+  filter(gene=="tp53") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_all_density.png"), height = 6, width = 8, dpi = 300)
+
+#Afican American
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="African_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_afr_density.png"), height = 6, width = 8, dpi = 300)
+
+#Latino admixed american
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Latino_admixed_american") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_lat_density.png"), height = 6, width = 8, dpi = 300)
+
+#Non Finnish European
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="Non_finnish_european") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_nfe_density.png"), height = 6, width = 8, dpi = 300)
+
+#East Asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="East_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_ea_density.png"), height = 6, width = 8, dpi = 300)
+
+#South asian
+gnomad_freq %>% 
+  filter(gene=="tp53",
+         Population=="South_asian") %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(freq_log) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+  group_by(clin_var_clinical_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  ggplot(aes(x=normalised, fill=clin_var_clinical_significance)) + 
+  geom_density(alpha=0.6, colour= "black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/Freq normal/density/tp53/tp53_sa_density.png"), height = 6, width = 8, dpi = 300)
+```
+#Allele count graphs 
+```{r}
+gnomad_count <- gnomad_freq %>%
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count) %>% 
+  select(-c(freq_allele, freq_log))
+```
+
+Histogram function
+```{r}
+histo <- function(x,y) {gnomad_count %>% 
+    filter(gene==x,
+           Population==y) %>%
+    ggplot(aes(x=count_range , fill=clin_var_clinical_significance)) + 
+    geom_bar(position = "dodge", colour="black") + 
+    scale_fill_manual(values = c("Benign" = "skyblue", 
+                                 "Pathogenic" = "red", 
+                                 "Blank" = "darkgray", 
+                                 "Uncertain" = "darkgreen")) +
+    xlim("0-1", "2-3", "4-10", "11-100", "100+")}
+```
+Histogram graphs 
+```{r}
+#ATM
+histo("atm", "African_american")
+ggsave(here("output/count/hist/atm/atm_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("atm", "Latino_admixed_american")
+ggsave(here("output/count/hist/atm/atm_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("atm", "East_asian")
+ggsave(here("output/count/hist/atm/atm_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("atm", "Non_finnish_european")
+ggsave(here("output/count/hist/atm/atm_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("atm", "South_asian")
+ggsave(here("output/count/hist/atm/atm_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+histo("bard1", "African_american")
+ggsave(here("output/count/hist/bard1/bard1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("bard1", "Latino_admixed_american")
+ggsave(here("output/count/hist/bard1/bard1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("bard1", "East_asian")
+ggsave(here("output/count/hist/bard1/bard1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("bard1", "Non_finnish_european")
+ggsave(here("output/count/hist/bard1/bard1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("bard1", "South_asian")
+ggsave(here("output/count/hist/bard1/bard1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+histo("brca1", "African_american")
+ggsave(here("output/count/hist/brca1/brca1_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca1", "Latino_admixed_american")
+ggsave(here("output/count/hist/brca1/brca1_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca1", "East_asian")
+ggsave(here("output/count/hist/brca1/brca1_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca1", "Non_finnish_european")
+ggsave(here("output/count/hist/brca1/brca1_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca1", "South_asian")
+ggsave(here("output/count/hist/brca1/brca1_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+histo("brca2", "African_american")
+ggsave(here("output/count/hist/brca2/brca2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca2", "Latino_admixed_american")
+ggsave(here("output/count/hist/brca2/brca2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca2", "East_asian")
+ggsave(here("output/count/hist/brca2/brca2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca2", "Non_finnish_european")
+ggsave(here("output/count/hist/brca2/brca2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("brca2", "South_asian")
+ggsave(here("output/count/hist/brca2/brca2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+histo("chek2", "African_american")
+ggsave(here("output/count/hist/chek2/chek2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("chek2", "Latino_admixed_american")
+ggsave(here("output/count/hist/chek2/chek2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("chek2", "East_asian")
+ggsave(here("output/count/hist/chek2/chek2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("chek2", "Non_finnish_european")
+ggsave(here("output/count/hist/chek2/chek2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("chek2", "South_asian")
+ggsave(here("output/count/hist/chek2/chek2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+histo("palb2", "African_american")
+ggsave(here("output/count/hist/palb2/palb2_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("palb2", "Latino_admixed_american")
+ggsave(here("output/count/hist/palb2/palb2_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("palb2", "East_asian")
+ggsave(here("output/count/hist/palb2/palb2_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("palb2", "Non_finnish_european")
+ggsave(here("output/count/hist/palb2/palb2_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("palb2", "South_asian")
+ggsave(here("output/count/hist/palb2/palb2_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+histo("rad51c", "African_american")
+ggsave(here("output/count/hist/rad51c/rad51c_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51c", "Latino_admixed_american")
+ggsave(here("output/count/hist/rad51c/rad51c_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51c", "East_asian")
+ggsave(here("output/count/hist/rad51c/rad51c_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51c", "Non_finnish_european")
+ggsave(here("output/count/hist/rad51c/rad51c_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51c", "South_asian")
+ggsave(here("output/count/hist/rad51c/rad51c_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+histo("rad51d", "African_american")
+ggsave(here("output/count/hist/rad51d/rad51d_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51d", "Latino_admixed_american")
+ggsave(here("output/count/hist/rad51d/rad51d_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51d", "East_asian")
+ggsave(here("output/count/hist/rad51d/rad51d_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51d", "Non_finnish_european")
+ggsave(here("output/count/hist/rad51d/rad51d_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("rad51d", "South_asian")
+ggsave(here("output/count/hist/rad51d/rad51d_sa_histo.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+histo("tp53", "African_american")
+ggsave(here("output/count/hist/tp53/tp53_afr_histo.png"), height = 6, width = 8, dpi = 300)
+histo("tp53", "Latino_admixed_american")
+ggsave(here("output/count/hist/tp53/tp53_lat_histo.png"), height = 6, width = 8, dpi = 300)
+histo("tp53", "East_asian")
+ggsave(here("output/count/hist/tp53/tp53_ea_histo.png"), height = 6, width = 8, dpi = 300)
+histo("tp53", "Non_finnish_european")
+ggsave(here("output/count/hist/tp53/tp53_nfe_histo.png"), height = 6, width = 8, dpi = 300)
+histo("tp53", "South_asian")
+ggsave(here("output/count/hist/tp53/tp53_sa_histo.png"), height = 6, width = 8, dpi = 300)
+```
+Stacked bar function
+```{r}
+histogram <- function(x,y) {gnomad_count %>% 
+    filter(gene==x,
+           Population==y) %>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_var_clinical_significance)) + 
+    geom_bar(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Number of Variants")}
+```
+Stacked bar graphs
+```{r}
+#ATM
+histogram("atm", "African_american") + labs(title = "Number of African American variants in each allele count range for ATM")
+ggsave(here("output/stack/hist/atm/atm_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("atm", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for ATM")
+ggsave(here("output/stack/hist/atm/atm_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("atm", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for ATM")
+ggsave(here("output/stack/hist/atm/atm_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("atm", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for ATM")
+ggsave(here("output/stack/hist/atm/atm_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("atm", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for ATM")
+ggsave(here("output/stack/hist/atm/atm_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+histogram("bard1", "African_american") + labs(title = "Number of African American variants in each allele count range for BARD1")
+ggsave(here("output/stack/hist/bard1/bard1_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("bard1", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for BARD1")
+ggsave(here("output/stack/hist/bard1/bard1_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("bard1", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for BARD1")
+ggsave(here("output/stack/hist/bard1/bard1_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("bard1", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BARD1")
+ggsave(here("output/stack/hist/bard1/bard1_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("bard1", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for BARD1")
+ggsave(here("output/stack/hist/bard1/bard1_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+histogram("brca1", "African_american") + labs(title = "Number of African American variants in each allele count range for BRCA1")
+ggsave(here("output/stack/hist/brca1/brca1_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca1", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for BRCA1")
+ggsave(here("output/stack/hist/brca1/brca1_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca1", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for BRCA1")
+ggsave(here("output/stack/hist/brca1/brca1_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca1", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BRCA1")
+ggsave(here("output/stack/hist/brca1/brca1_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca1", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for BRCA1")
+ggsave(here("output/stack/hist/brca1/brca1_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+histogram("brca2", "African_american") + labs(title = "Number of African American variants in each allele count range for BRCA2")
+ggsave(here("output/stack/hist/brca2/brca2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca2", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for BRCA2")
+ggsave(here("output/stack/hist/brca2/brca2_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca2", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for BRCA2")
+ggsave(here("output/stack/hist/brca2/brca2_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca2", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BRCA2")
+ggsave(here("output/stack/hist/brca2/brca2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("brca2", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for BRCA2")
+ggsave(here("output/stack/hist/brca2/brca2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+histogram("chek2", "African_american") + labs(title = "Number of African American variants in each allele count range for CHEK2")
+ggsave(here("output/stack/hist/chek2/chek2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("chek2", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for CHEK2")
+ggsave(here("output/stack/hist/chek2/chek2_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("chek2", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for CHEK2")
+ggsave(here("output/stack/hist/chek2/chek2_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("chek2", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for CHEK2")
+ggsave(here("output/stack/hist/chek2/chek2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("chek2", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for CHEK2")
+ggsave(here("output/stack/hist/chek2/chek2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+histogram("palb2", "African_american") + labs(title = "Number of African American variants in each allele count range for PALB2")
+ggsave(here("output/stack/hist/palb2/palb2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("palb2", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for PALB2")
+ggsave(here("output/stack/hist/palb2/palb2_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("palb2", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for PALB2")
+ggsave(here("output/stack/hist/palb2/palb2_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("palb2", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for PALB2")
+ggsave(here("output/stack/hist/palb2/palb2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("palb2", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for PALB2")
+ggsave(here("output/stack/hist/palb2/palb2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+histogram("rad51c", "African_american") + labs(title = "Number of African American variants in each allele count range for RAD51C")
+ggsave(here("output/stack/hist/rad51c/rad51c_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51c", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for RAD51C")
+ggsave(here("output/stack/hist/rad51c/rad51c_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51c", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for RAD51C")
+ggsave(here("output/stack/hist/rad51c/rad51c_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51c", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for RAD51C")
+ggsave(here("output/stack/hist/rad51c/rad51c_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51c", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for RAD51C")
+ggsave(here("output/stack/hist/rad51c/rad51c_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+histogram("rad51d", "African_american") + labs(title = "Number of African American variants in each allele count range for RAD51D")
+ggsave(here("output/stack/hist/rad51d/rad51d_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51d", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for RAD51D")
+ggsave(here("output/stack/hist/rad51d/rad51d_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51d", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for RAD51D")
+ggsave(here("output/stack/hist/rad51d/rad51d_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51d", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for RAD51D")
+ggsave(here("output/stack/hist/rad51d/rad51d_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("rad51d", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for RAD51D")
+ggsave(here("output/stack/hist/rad51d/rad51d_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+histogram("tp53", "African_american") + labs(title = "Number of African American variants in each allele count range for TP53")
+ggsave(here("output/stack/hist/tp53/tp53_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("tp53", "Latino_admixed_american")+ labs(title = "Number of Latino admixed American variants in each allele count range for TP53")
+ggsave(here("output/stack/hist/tp53/tp53_lat_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("tp53", "East_asian")+ labs(title = "Number of East Asian variants in each allele count range for TP53")
+ggsave(here("output/stack/hist/tp53/tp53_ea_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("tp53", "Non_finnish_european")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for TP53")
+ggsave(here("output/stack/hist/tp53/tp53_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram("tp53", "South_asian")+ labs(title = "Number of South Asian variants in each allele count range for TP53")
+ggsave(here("output/stack/hist/tp53/tp53_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+```
+Normalised function
+```{r}
+normal <- function(x,y) {gnomad_count %>% 
+    filter(gene==x,
+           Population==y) %>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Number of Variants")}
+```
+Normalised graphs
+```{r}
+#ATM
+normal("atm", "African_american") + labs(title = "Percentage of African American variants in each allele count range for ATM")
+ggsave(here("output/stack/normal/atm/atm_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("atm", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for ATM")
+ggsave(here("output/stack/normal/atm/atm_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("atm", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for ATM")
+ggsave(here("output/stack/normal/atm/atm_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("atm", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for ATM")
+ggsave(here("output/stack/normal/atm/atm_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("atm", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for ATM")
+ggsave(here("output/stack/normal/atm/atm_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+normal("bard1", "African_american") + labs(title = "Percentage of African American variants in each allele count range for BARD1")
+ggsave(here("output/stack/normal/bard1/bard1_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("bard1", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for BARD1")
+ggsave(here("output/stack/normal/bard1/bard1_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("bard1", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for BARD1")
+ggsave(here("output/stack/normal/bard1/bard1_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("bard1", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BARD1")
+ggsave(here("output/stack/normal/bard1/bard1_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("bard1", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for BARD1")
+ggsave(here("output/stack/normal/bard1/bard1_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+normal("brca1", "African_american") + labs(title = "Percentage of African American variants in each allele count range for BRCA1")
+ggsave(here("output/stack/normal/brca1/brca1_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca1", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for BRCA1")
+ggsave(here("output/stack/normal/brca1/brca1_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca1", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for BRCA1")
+ggsave(here("output/stack/normal/brca1/brca1_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca1", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BRCA1")
+ggsave(here("output/stack/normal/brca1/brca1_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca1", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for BRCA1")
+ggsave(here("output/stack/normal/brca1/brca1_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+normal("brca2", "African_american") + labs(title = "Percentage of African American variants in each allele count range for BRCA2")
+ggsave(here("output/stack/normal/brca2/brca2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca2", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for BRCA2")
+ggsave(here("output/stack/normal/brca2/brca2_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca2", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for BRCA2")
+ggsave(here("output/stack/normal/brca2/brca2_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca2", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BRCA2")
+ggsave(here("output/stack/normal/brca2/brca2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("brca2", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for BRCA2")
+ggsave(here("output/stack/normal/brca2/brca2_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+normal("chek2", "African_american") + labs(title = "Percentage of African American variants in each allele count range for CHEK2")
+ggsave(here("output/stack/normal/chek2/chek2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("chek2", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for CHEK2")
+ggsave(here("output/stack/normal/chek2/chek2_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("chek2", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for CHEK2")
+ggsave(here("output/stack/normal/chek2/chek2_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("chek2", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for CHEK2")
+ggsave(here("output/stack/normal/chek2/chek2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("chek2", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for CHEK2")
+ggsave(here("output/stack/normal/chek2/chek2_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+normal("palb2", "African_american") + labs(title = "Percentage of African American variants in each allele count range for PALB2")
+ggsave(here("output/stack/normal/palb2/palb2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("palb2", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for PALB2")
+ggsave(here("output/stack/normal/palb2/palb2_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("palb2", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for PALB2")
+ggsave(here("output/stack/normal/palb2/palb2_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("palb2", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for PALB2")
+ggsave(here("output/stack/normal/palb2/palb2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("palb2", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for PALB2")
+ggsave(here("output/stack/normal/palb2/palb2_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+normal("rad51c", "African_american") + labs(title = "Percentage of African American variants in each allele count range for RAD51C")
+ggsave(here("output/stack/normal/rad51c/rad51c_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51c", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for RAD51C")
+ggsave(here("output/stack/normal/rad51c/rad51c_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51c", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for RAD51C")
+ggsave(here("output/stack/normal/rad51c/rad51c_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51c", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for RAD51C")
+ggsave(here("output/stack/normal/rad51c/rad51c_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51c", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for RAD51C")
+ggsave(here("output/stack/normal/rad51c/rad51c_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+normal("rad51d", "African_american") + labs(title = "Percentage of African American variants in each allele count range for RAD51D")
+ggsave(here("output/stack/normal/rad51d/rad51d_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51d", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for RAD51D")
+ggsave(here("output/stack/normal/rad51d/rad51d_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51d", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for RAD51D")
+ggsave(here("output/stack/normal/rad51d/rad51d_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51d", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for RAD51D")
+ggsave(here("output/stack/normal/rad51d/rad51d_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("rad51d", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for RAD51D")
+ggsave(here("output/stack/normal/rad51d/rad51d_sa_normal.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+normal("tp53", "African_american") + labs(title = "Percentage of African American variants in each allele count range for TP53")
+ggsave(here("output/stack/normal/tp53/tp53_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal("tp53", "Latino_admixed_american")+ labs(title = "Percentage of Latino admixed American variants in each allele count range for TP53")
+ggsave(here("output/stack/normal/tp53/tp53_lat_normal.png"), height = 6, width = 8, dpi = 300)
+normal("tp53", "East_asian")+ labs(title = "Percentage of East Asian variants in each allele count range for TP53")
+ggsave(here("output/stack/normal/tp53/tp53_ea_normal.png"), height = 6, width = 8, dpi = 300)
+normal("tp53", "Non_finnish_european")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for TP53")
+ggsave(here("output/stack/normal/tp53/tp53_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal("tp53", "South_asian")+ labs(title = "Percentage of South Asian variants in each allele count range for TP53")
+ggsave(here("output/stack/normal/tp53/tp53_sa_normal.png"), height = 6, width = 8, dpi = 300)
+```
+All populations graphs
+```{r}
+#ATM
+gnomad_count %>% 
+    filter(gene=="atm")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the ATM gene")
+ggsave(here("output/stack/normal/atm/atm_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+gnomad_count %>% 
+    filter(gene=="bard1")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the BARD1 gene")
+ggsave(here("output/stack/normal/bard1/bard1_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+gnomad_count %>% 
+    filter(gene=="brca1")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the BRCA1 gene")
+ggsave(here("output/stack/normal/brca1/brca1_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+gnomad_count %>% 
+    filter(gene=="brca2")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the BRCA2 gene")
+ggsave(here("output/stack/normal/brca2/brca2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+gnomad_count %>% 
+    filter(gene=="chek2")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the CHEK2 gene")
+ggsave(here("output/stack/normal/chek2/chek2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+gnomad_count %>% 
+    filter(gene=="palb2")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the PALB2 gene")
+ggsave(here("output/stack/normal/palb2/palb2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+gnomad_count %>% 
+    filter(gene=="rad51c")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the RAD51C gene")
+ggsave(here("output/stack/normal/rad51c/rad51c_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+gnomad_count %>% 
+    filter(gene=="rad51d")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges 
+         for the RAD51D gene")
+ggsave(here("output/stack/normal/rad51d/rad51d_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+gnomad_count %>% 
+    filter(gene=="tp53")%>%
+    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_sig = case_when(clin_sig=="Blank" ~ "Unreported", TRUE~ clin_sig)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges
+         for the TP53 gene")
+ggsave(here("output/stack/normal/tp53/tp53_all_normal.png"), height = 6, width = 8, dpi = 300)
+```
+0-1 Count range between populations function
+```{r}
+count_range <- function(x) {gnomad_count %>% 
+      filter(gene==x, 
+           count_range=="0-1") %>%
+      mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "Unreported", TRUE ~ clin_var_clinical_significance)) %>% 
+   group_by(clin_var_clinical_significance) %>% 
+    count(Population) %>% 
+   mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance=="Blank" ~ "Unreported", TRUE~ clin_var_clinical_significance)) %>% 
+   group_by(clin_var_clinical_significance) %>% 
+    mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(x=clin_var_clinical_significance, y = normalised, fill=Population)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("African_american" = "#800080", 
+                               "Latino_admixed_american" = "darkgreen", 
+                               "Non_finnish_european" = "gray", 
+                               "East_asian" = "navy",
+                               "South_asian" = "darkred")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") + 
+    labs(x="ClinVar Clinical Significance", y="Percentage of variants")}
+```
+Graph of 0-1
+```{r}
+count_range("atm") + labs(title = "Percentage of variants with an allele count of 1 for ATM")
+ggsave(here("output/stack/0-1/atm.png"), height = 6, width = 8, dpi = 300)
+count_range("bard1") + labs(title = "Percentage of variants with an allele count of 1 for BARD1")
+ggsave(here("output/stack/0-1/bard1.png"), height = 6, width = 8, dpi = 300)
+count_range("brca1") + labs(title = "Percentage of variants with an allele count of 1 for BRCA1")
+ggsave(here("output/stack/0-1/brca1.png"), height = 6, width = 8, dpi = 300)
+count_range("brca2") + labs(title = "Percentage of variants with an allele count of 1 for BRCA2")
+ggsave(here("output/stack/0-1/brca2.png"), height = 6, width = 8, dpi = 300)
+count_range("chek2") + labs(title = "Percentage of variants with an allele count of 1 for CHEK2")
+ggsave(here("output/stack/0-1/chek2.png"), height = 6, width = 8, dpi = 300)
+count_range("palb2") + labs(title = "Percentage of variants with an allele count of 1 for PALB2")
+ggsave(here("output/stack/0-1/palb2.png"), height = 6, width = 8, dpi = 300)
+count_range("rad51c") + labs(title = "Percentage of variants with an allele count of 1 for RAD51C")
+ggsave(here("output/stack/0-1/rad51c.png"), height = 6, width = 8, dpi = 300)
+count_range("rad51d") + labs(title = "Percentage of variants with an allele count of 1 for RAD51Do")
+ggsave(here("output/stack/0-1/rad51d.png"), height = 6, width = 8, dpi = 300)
+count_range("tp53") + labs(title = "Percentage of variants with an allele count of 1 for TP53")
+ggsave(here("output/stack/0-1/tp53.png"), height = 6, width = 8, dpi = 300)
+```
+
+
