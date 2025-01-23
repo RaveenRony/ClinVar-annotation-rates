@@ -1,0 +1,714 @@
+gnomAD v4 - Allele count graphs created to show rarity of variant in population
+Library of Packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+
+Change allele counts to ranges of 0-1, 2-3, 4-10, 11-100 & 100+
+```{r}
+gnomadv4 <- full_join(ATMv4, BARD1v4) %>% full_join(BRCA1v4) %>% full_join(BRCA2v4) %>% full_join(CHEK2v4) %>% full_join(PALB2v4) %>% full_join(RAD51Cv4) %>% full_join(RAD51Dv4) %>% full_join(TP53v4)
+
+gnomadv4_afr <- gnomadv4 %>% 
+  filter(allele_count_african_african_american!=0, allele_count_remaining==0, allele_count_admixed_american==0, allele_count_ashkenazi_jewish==0, allele_count_east_asian==0, allele_count_european_finnish==0, allele_count_european_non_finnish==0 , allele_count_south_asian==0, allele_count_middle_eastern==0, allele_count_amish==0) %>% 
+  mutate(population = "AFR",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomadv4_amr <- gnomadv4 %>% 
+  filter(allele_count_african_african_american==0, allele_count_remaining==0, allele_count_admixed_american!=0, allele_count_ashkenazi_jewish==0, allele_count_east_asian==0, allele_count_european_finnish==0, allele_count_european_non_finnish==0 , allele_count_south_asian==0, allele_count_middle_eastern==0, allele_count_amish==0) %>% 
+  mutate(population = "AMR",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomadv4_nfe <- gnomadv4 %>% 
+  filter(allele_count_african_african_american==0, allele_count_remaining==0, allele_count_admixed_american==0, allele_count_ashkenazi_jewish==0, allele_count_east_asian==0, allele_count_european_finnish==0, allele_count_european_non_finnish!=0 , allele_count_south_asian==0, allele_count_middle_eastern==0, allele_count_amish==0) %>% 
+  mutate(population = "NFE",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomadv4_eas <- gnomadv4 %>% 
+  filter(allele_count_african_african_american==0, allele_count_remaining==0, allele_count_admixed_american==0, allele_count_ashkenazi_jewish==0, allele_count_east_asian!=0, allele_count_european_finnish==0, allele_count_european_non_finnish==0 , allele_count_south_asian==0, allele_count_middle_eastern==0, allele_count_amish==0) %>% 
+  mutate(population = "EAS",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomadv4_sas <- gnomadv4 %>% 
+  filter(allele_count_african_african_american==0, allele_count_remaining==0, allele_count_admixed_american==0, allele_count_ashkenazi_jewish==0, allele_count_east_asian==0, allele_count_european_finnish==0, allele_count_european_non_finnish==0 , allele_count_south_asian!=0, allele_count_middle_eastern==0, allele_count_amish==0) %>% 
+  mutate(population = "SAS",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomadv4_count <-  full_join(gnomadv4_afr, gnomadv4_amr) %>% full_join(gnomadv4_nfe) %>% full_join(gnomadv4_eas) %>% full_join(gnomadv4_sas)
+```
+
+Function to make histogram using ranges for specified gene and population
+```{r}
+histo_v4 <- function(x,y) {gnomadv4_count %>% 
+    filter(gene==x,
+           population==y) %>%
+    ggplot(aes(x=count_range , fill=clin_var_clinical_significance)) + 
+    geom_bar(position = "dodge", colour="black") + 
+    scale_fill_manual(values = c("Benign" = "skyblue", 
+                                 "Pathogenic" = "red", 
+                                 "Unreported" = "darkgray", 
+                                 "Uncertain" = "darkgreen")) +
+    xlim("0-1", "2-3", "4-10", "11-100", "100+")}
+```
+Histogram graphs 
+```{r}
+#ATM
+histo_v4("ATM", "AFR")
+ggsave(here("output/v4/count/hist/ATM/atm_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("ATM", "AMR")
+ggsave(here("output/count/hist/ATM/atm_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("ATM", "EAS")
+ggsave(here("output/count/hist/ATM/atm_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("ATM", "NFE")
+ggsave(here("output/count/hist/ATM/atm_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("ATM", "SAS")
+ggsave(here("output/count/hist/ATM/atm_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+histo_v4("BARD1", "AFR")
+ggsave(here("output/v4/count/hist/BARD1/bard1_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BARD1", "AMR")
+ggsave(here("output/count/hist/BARD1/bard1_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BARD1", "EAS")
+ggsave(here("output/count/hist/BARD1/bard1_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BARD1", "NFE")
+ggsave(here("output/count/hist/BARD1/bard1_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BARD1", "SAS")
+ggsave(here("output/count/hist/BARD1/bard1_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+histo_v4("BRCA1", "AFR")
+ggsave(here("output/v4/count/hist/BRCA1/brca1_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA1", "AMR")
+ggsave(here("output/count/hist/BRCA1/brca1_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA1", "EAS")
+ggsave(here("output/count/hist/BRCA1/brca1_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA1", "NFE")
+ggsave(here("output/count/hist/BRCA1/brca1_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA1", "SAS")
+ggsave(here("output/count/hist/BRCA1/brca1_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+histo_v4("BRCA2", "AFR")
+ggsave(here("output/v4/count/hist/BRCA2/brca2_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA2", "AMR")
+ggsave(here("output/count/hist/BRCA2/brca2_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA2", "EAS")
+ggsave(here("output/count/hist/BRCA2/brca2_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA2", "NFE")
+ggsave(here("output/count/hist/BRCA2/brca2_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("BRCA2", "SAS")
+ggsave(here("output/count/hist/BRCA2/brca2_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+histo_v4("CHEK2", "AFR")
+ggsave(here("output/v4/count/hist/CHEK2/chek2_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("CHEK2", "AMR")
+ggsave(here("output/count/hist/CHEK2/chek2_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("CHEK2", "EAS")
+ggsave(here("output/count/hist/CHEK2/chek2_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("CHEK2", "NFE")
+ggsave(here("output/count/hist/CHEK2/chek2_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("CHEK2", "SAS")
+ggsave(here("output/count/hist/CHEK2/chek2_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+histo_v4("PALB2", "AFR")
+ggsave(here("output/v4/count/hist/PALB2/palb2_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("PALB2", "AMR")
+ggsave(here("output/count/hist/PALB2/palb2_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("PALB2", "EAS")
+ggsave(here("output/count/hist/PALB2/palb2_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("PALB2", "NFE")
+ggsave(here("output/count/hist/PALB2/palb2_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("PALB2", "SAS")
+ggsave(here("output/count/hist/PALB2/palb2_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+histo_v4("RAD51C", "AFR")
+ggsave(here("output/v4/count/hist/RAD51C/rad51c_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51C", "AMR")
+ggsave(here("output/count/hist/RAD51C/rad51c_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51C", "EAS")
+ggsave(here("output/count/hist/RAD51C/rad51c_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51C", "NFE")
+ggsave(here("output/count/hist/RAD51C/rad51c_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51C", "SAS")
+ggsave(here("output/count/hist/RAD51C/rad51c_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+histo_v4("RAD51D", "AFR")
+ggsave(here("output/v4/count/hist/RAD51D/rad51d_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51D", "AMR")
+ggsave(here("output/count/hist/RAD51D/rad51d_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51D", "EAS")
+ggsave(here("output/count/hist/RAD51D/rad51d_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51D", "NFE")
+ggsave(here("output/count/hist/RAD51D/rad51d_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("RAD51D", "SAS")
+ggsave(here("output/count/hist/RAD51D/rad51d_sas_hist.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+histo_v4("TP53", "AFR")
+ggsave(here("output/v4/count/hist/TP53/tp53_afr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("TP53", "AMR")
+ggsave(here("output/count/hist/TP53/tp53_amr_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("TP53", "EAS")
+ggsave(here("output/count/hist/TP53/tp53_eas_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("TP53", "NFE")
+ggsave(here("output/count/hist/TP53/tp53_nfe_hist.png"), height = 6, width = 8, dpi = 300)
+histo_v4("TP53", "SAS")
+ggsave(here("output/count/hist/TP53/tp53_sas_hist.png"), height = 6, width = 8, dpi = 300)
+```
+
+Function to make stacked bar charts using ranges for specified gene and population
+```{r}
+histogram_v4 <- function(x,y) {gnomadv4_count %>% 
+    filter(gene==x,
+           population==y) %>%
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_var_clinical_significance)) + 
+    geom_bar(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Number of Variants")}
+```
+Stacked bar graphs
+```{r}
+#ATM
+histogram_v4("ATM", "AFR") + labs(title = "Number of African American variants in each allele count range for ATM")
+ggsave(here("output/v4/count/stack/ATM/atm_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("ATM", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for ATM")
+ggsave(here("output/v4/count/stack/ATM/atm_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("ATM", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for ATM")
+ggsave(here("output/v4/count/stack/ATM/atm_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("ATM", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for ATM")
+ggsave(here("output/v4/count/stack/ATM/atm_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("ATM", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for ATM")
+ggsave(here("output/v4/count/stack/ATM/atm_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+histogram_v4("BARD1", "AFR") + labs(title = "Number of African American variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/stack/BARD1/bard1_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BARD1", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/stack/BARD1/bard1_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BARD1", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/stack/BARD1/bard1_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BARD1", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/stack/BARD1/bard1_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BARD1", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/stack/BARD1/bard1_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+histogram_v4("BRCA1", "AFR") + labs(title = "Number of African American variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/stack/BRCA1/brca1_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA1", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/stack/BRCA1/brca1_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA1", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/stack/BRCA1/brca1_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA1", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/stack/BRCA1/brca1_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA1", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/stack/BRCA1/brca1_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+histogram_v4("BRCA2", "AFR") + labs(title = "Number of African American variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/stack/BRCA2/brca2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA2", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/stack/BRCA2/brca2_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA2", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/stack/BRCA2/brca2_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA2", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/stack/BRCA2/brca2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("BRCA2", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/stack/BRCA2/brca2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+histogram_v4("CHEK2", "AFR") + labs(title = "Number of African American variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/stack/CHEK2/chek2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("CHEK2", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/stack/CHEK2/chek2_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("CHEK2", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/stack/CHEK2/chek2_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("CHEK2", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/stack/CHEK2/chek2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("CHEK2", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/stack/CHEK2/chek2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+histogram_v4("PALB2", "AFR") + labs(title = "Number of African American variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/stack/PALB2/palb2_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("PALB2", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/stack/PALB2/palb2_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("PALB2", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/stack/PALB2/palb2_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("PALB2", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/stack/PALB2/palb2_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("PALB2", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/stack/PALB2/palb2_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+histogram_v4("RAD51C", "AFR") + labs(title = "Number of African American variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/stack/RAD51C/rad51c_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51C", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/stack/RAD51C/rad51c_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51C", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/stack/RAD51C/rad51c_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51C", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/stack/RAD51C/rad51c_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51C", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/stack/RAD51C/rad51c_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+histogram_v4("RAD51D", "AFR") + labs(title = "Number of African American variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/stack/RAD51D/rad51d_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51D", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/stack/RAD51D/rad51d_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51D", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/stack/RAD51D/rad51d_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51D", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/stack/RAD51D/rad51d_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("RAD51D", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/stack/RAD51D/rad51d_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+histogram_v4("TP53", "AFR") + labs(title = "Number of African American variants in each allele count range for TP53")
+ggsave(here("output/v4/count/stack/TP53/tp53_afr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("TP53", "AMR")+ labs(title = "Number of Admixed American variants in each allele count range for TP53")
+ggsave(here("output/v4/count/stack/TP53/tp53_amr_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("TP53", "EAS")+ labs(title = "Number of East Asian variants in each allele count range for TP53")
+ggsave(here("output/v4/count/stack/TP53/tp53_eas_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("TP53", "NFE")+ labs(title = "Number of Non-Finnish Europeans variants in each allele count range for TP53")
+ggsave(here("output/v4/count/stack/TP53/tp53_nfe_histogram.png"), height = 6, width = 8, dpi = 300)
+histogram_v4("TP53", "SAS")+ labs(title = "Number of South Asian variants in each allele count range for TP53")
+ggsave(here("output/v4/count/stack/TP53/tp53_sa_histogram.png"), height = 6, width = 8, dpi = 300)
+```
+
+Function to make normalised stacked bar charts using ranges for specified gene and population
+```{r}
+normal_v4 <- function(x,y) {gnomadv4_count %>% 
+    filter(gene==x,
+           population==y) %>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Number of Variants")}
+```
+Normalised graphs
+```{r}
+#ATM
+normal_v4("ATM", "AFR") + labs(title = "Percentage of African American variants in each allele count range for ATM")
+ggsave(here("output/v4/count/normal/ATM/atm_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("ATM", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for ATM")
+ggsave(here("output/v4/count/normal/ATM/atm_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("ATM", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for ATM")
+ggsave(here("output/v4/count/normal/ATM/atm_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("ATM", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for ATM")
+ggsave(here("output/v4/count/normal/ATM/atm_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("ATM", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for ATM")
+ggsave(here("output/v4/count/normal/ATM/atm_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+normal_v4("BARD1", "AFR") + labs(title = "Percentage of African American variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/normal/BARD1/bard1_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BARD1", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/normal/BARD1/bard1_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BARD1", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/normal/BARD1/bard1_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BARD1", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/normal/BARD1/bard1_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BARD1", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for BARD1")
+ggsave(here("output/v4/count/normal/BARD1/bard1_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+normal_v4("BRCA1", "AFR") + labs(title = "Percentage of African American variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA1", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA1", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA1", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA1", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for BRCA1")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+normal_v4("BRCA2", "AFR") + labs(title = "Percentage of African American variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA2", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA2", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA2", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("BRCA2", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for BRCA2")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+normal_v4("CHEK2", "AFR") + labs(title = "Percentage of African American variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("CHEK2", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("CHEK2", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("CHEK2", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("CHEK2", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for CHEK2")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+normal_v4("PALB2", "AFR") + labs(title = "Percentage of African American variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/normal/PALB2/palb2_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("PALB2", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/normal/PALB2/palb2_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("PALB2", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/normal/PALB2/palb2_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("PALB2", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/normal/PALB2/palb2_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("PALB2", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for PALB2")
+ggsave(here("output/v4/count/normal/PALB2/palb2_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+normal_v4("RAD51C", "AFR") + labs(title = "Percentage of African American variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51C", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51C", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51C", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51C", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for RAD51C")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+normal_v4("RAD51D", "AFR") + labs(title = "Percentage of African American variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51D", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51D", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51D", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("RAD51D", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for RAD51D")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_sas_normal.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+normal_v4("TP53", "AFR") + labs(title = "Percentage of African American variants in each allele count range for TP53")
+ggsave(here("output/v4/count/normal/TP53/tp53_afr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("TP53", "AMR")+ labs(title = "Percentage of Admixed American variants in each allele count range for TP53")
+ggsave(here("output/v4/count/normal/TP53/tp53_amr_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("TP53", "EAS")+ labs(title = "Percentage of East Asian variants in each allele count range for TP53")
+ggsave(here("output/v4/count/normal/TP53/tp53_eas_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("TP53", "NFE")+ labs(title = "Percentage of Non-Finnish Europeans variants in each allele count range for TP53")
+ggsave(here("output/v4/count/normal/TP53/tp53_nfe_normal.png"), height = 6, width = 8, dpi = 300)
+normal_v4("TP53", "SAS")+ labs(title = "Percentage of South Asian variants in each allele count range for TP53")
+ggsave(here("output/v4/count/normal/TP53/tp53_sas_normal.png"), height = 6, width = 8, dpi = 300)
+```
+Normalised graphs for each gene
+```{r}
+#ATM
+gnomadv4_count %>% 
+  filter(gene=="ATM")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the ATM gene")
+ggsave(here("output/v4/count/normal/ATM/atm_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BARD1
+gnomadv4_count %>% 
+  filter(gene=="BARD1")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the BARD1 gene")
+ggsave(here("output/v4/count/normal/BARD1/bard1_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA1
+gnomadv4_count %>% 
+  filter(gene=="BRCA1")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the BRCA1 gene")
+ggsave(here("output/v4/count/normal/BRCA1/brca1_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#BRCA2
+gnomadv4_count %>% 
+  filter(gene=="BRCA2")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the BRCA2 gene")
+ggsave(here("output/v4/count/normal/BRCA2/brca2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#CHEK2
+gnomadv4_count %>% 
+  filter(gene=="CHEK2")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the CHEK2 gene")
+ggsave(here("output/v4/count/normal/CHEK2/chek2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#PALB2
+gnomadv4_count %>% 
+  filter(gene=="PALB2")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the PALB2 gene")
+ggsave(here("output/v4/count/normal/PALB2/palb2_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51C
+gnomadv4_count %>% 
+  filter(gene=="RAD51C")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the RAD51C gene")
+ggsave(here("output/v4/count/normal/RAD51C/rad51c_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#RAD51D
+gnomadv4_count %>% 
+  filter(gene=="RAD51D")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the RAD51D gene")
+ggsave(here("output/v4/count/normal/RAD51D/rad51d_all_normal.png"), height = 6, width = 8, dpi = 300)
+
+#TP53
+gnomadv4_count %>% 
+  filter(gene=="TP53")%>%
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
+  count(count_range) %>% 
+  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  group_by(clin_sig) %>% 
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x=clin_sig, y=normalised)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("0-1" = "skyblue", 
+                                 "2-3" = "blue", 
+                                 "4-10" = "darkblue", 
+                                 "11-100" = "purple",
+                                 "100+" = "red")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    labs(fill="Allele count range", x= "ClinVar Clinical Significance", y = "Percentage of Variants", 
+         title = "Percentage of variants differentiated by ClinVar annotations and allele count ranges for the TP53 gene")
+ggsave(here("output/v4/count/normal/TP53/tp53_all_normal.png"), height = 6, width = 8, dpi = 300)
+```
+
+Function to make normalised stacked bar charts using only the 0-1 allele count ranges for each gene
+```{r}
+count_range_v4 <- function(x) {gnomadv4_count %>% 
+      filter(gene==x, 
+             count_range=="0-1") %>%
+   group_by(clin_var_clinical_significance) %>% 
+   count(population) %>% 
+   mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+   group_by(clin_var_clinical_significance) %>% 
+    mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(x=clin_var_clinical_significance, y = normalised, fill=population)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("AFR" = "#800080", 
+                                 "AMR" = "darkgreen",
+                                 "NFE" = "gray", 
+                                 "EAS" = "navy",
+                                 "SAS" = "darkred")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") + 
+    labs(x="ClinVar Clinical Significance", y="Percentage of variants")}
+```
+Population distribution graphs of alleles within range 0-1
+```{r}
+count_range_v4("ATM") + labs(title = "Percentage of variants with an allele count of 1 for ATM")
+ggsave(here("output/v4/count/0-1/atm.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("BARD1") + labs(title = "Percentage of variants with an allele count of 1 for BARD1")
+ggsave(here("output/v4/count/0-1/bard1.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("BRCA1") + labs(title = "Percentage of variants with an allele count of 1 for BRCA1")
+ggsave(here("output/v4/count/0-1/brca1.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("BRCA2") + labs(title = "Percentage of variants with an allele count of 1 for BRCA2")
+ggsave(here("output/v4/count/0-1/brca2.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("CHEK2") + labs(title = "Percentage of variants with an allele count of 1 for CHEK2")
+ggsave(here("output/v4/count/0-1/chek2.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("PALB2") + labs(title = "Percentage of variants with an allele count of 1 for PALB2")
+ggsave(here("output/v4/count/0-1/palb2.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("RAD51C") + labs(title = "Percentage of variants with an allele count of 1 for RAD51C")
+ggsave(here("output/v4/count/0-1/rad51c.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("RAD51D") + labs(title = "Percentage of variants with an allele count of 1 for RAD51Do")
+ggsave(here("output/v4/count/0-1/rad51d.png"), height = 6, width = 8, dpi = 300)
+count_range_v4("TP53") + labs(title = "Percentage of variants with an allele count of 1 for TP53")
+ggsave(here("output/v4/count/0-1/tp53.png"), height = 6, width = 8, dpi = 300)
+
+gnomadv4_count %>% 
+      filter(count_range=="0-1") %>%
+   group_by(clin_var_clinical_significance) %>% 
+   count(population) %>% 
+   mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+   group_by(clin_var_clinical_significance) %>% 
+    mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+    ggplot(aes(x=clin_var_clinical_significance, y = normalised, fill=population)) + 
+    geom_col(alpha = 0.7, colour="black") + 
+    scale_fill_manual(values = c("AFR" = "#800080", 
+                                 "AMR" = "darkgreen",
+                                 "NFE" = "gray", 
+                                 "EAS" = "navy",
+                                 "SAS" = "darkred")) +
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") + 
+    labs(x="ClinVar Clinical Significance", y="Percentage of variants")
+ggsave(here("output/v4/count/0-1/all.png"), height = 6, width = 8, dpi = 300)
+```
+
+
