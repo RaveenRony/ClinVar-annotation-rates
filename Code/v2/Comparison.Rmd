@@ -1,0 +1,1176 @@
+gnomad 2022 & 2023 - All genes - Comparison of data/tables between both years & Line graph created from data and compared
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+
+Line Graph (Percentage of annotation for each gene in each population)
+2023
+```{r}
+full_join(gnomad_afro,gnomad_latino) %>% full_join(gnomad_europe) %>% full_join(gnomad_east_asia) %>% full_join(gnomad_south_asia) %>% full_join(gnomad_afro_total) %>% full_join(gnomad_europe_total) %>% full_join(gnomad_east_asia_total) %>% full_join(gnomad_latino_total) %>% full_join(gnomad_south_asia_total) %>% 
+  mutate("% annotated African"=round((African/African_total)*100,2), 
+         "% annotated Latino"=round((Latino/Latino_total)*100,2), 
+         "% annotated Europe"=round((Europe/Europe_total)*100,2), 
+         "% annotated East asia"=round((East_asia/East_asia_total)*100,2), 
+         "% annotated South asia"=round((South_asia/South_asia_total)*100,2)) %>%
+  select(-c(Europe, East_asia, African, South_asia, Latino)) %>% 
+  rename(Europe="% annotated Europe",East_asia="% annotated East asia",Latino="% annotated Latino",South_asia="% annotated South asia",African="% annotated African") %>%
+  pivot_longer(cols=c(African, Latino, Europe, East_asia, South_asia), names_to = "Population", values_to = "Values") %>% 
+  select(chromosome, Population, Values) %>% 
+  
+  ggplot(aes(x=Population,y=Values, shape=Population)) + geom_point() + geom_line(aes(group = chromosome), color = "black", linetype=6)+
+  facet_wrap(~chromosome) +
+  theme(axis.text.x = element_text(angle = 35, hjust=1)) + ylim(40, 100) + xlim("Europe", "African", "Latino", "East_asia", "South_asia") + labs(title= "Annotation percentage of the populations in 2023", y= "Percentage annotated")
+ggsave(here("output/variant_2023.png"), width = 8, height = 6, dpi = 300)
+```
+2022
+```{r}
+full_join(gnomad_2_afro,gnomad_2_latino) %>% full_join(gnomad_2_europe) %>% full_join(gnomad_2_east_asia) %>% full_join(gnomad_2_south_asia) %>% full_join(gnomad_2_afro_total) %>% full_join(gnomad_2_europe_total) %>% full_join(gnomad_2_east_asia_total) %>% full_join(gnomad_2_latino_total) %>% full_join(gnomad_2_south_asia_total) %>% 
+  mutate("% annotated African 2022"=round((African_2022/African_2022_total)*100,2), 
+         "% annotated Latino 2022"=round((Latino_2022/Latino_2022_total)*100,2), 
+         "% annotated Europe 2022"=round((Europe_2022/Europe_2022_total)*100,2), 
+         "% annotated East asia 2022"=round((East_asia_2022/East_asia_2022_total)*100,2),
+         "% annotated South asia 2022"=round((South_asia_2022/South_asia_2022_total)*100,2)) %>%
+  select(-c(Europe_2022, East_asia_2022, African_2022, South_asia_2022, Latino_2022)) %>% 
+  rename(Europe_2022="% annotated Europe 2022",East_asia_2022="% annotated East asia 2022",Latino_2022="% annotated Latino 2022",South_asia_2022="% annotated South asia 2022",African_2022="% annotated African 2022") %>%
+  pivot_longer(cols=c(African_2022, Latino_2022, Europe_2022, East_asia_2022, South_asia_2022), names_to = "Population_2022", values_to = "Values_2022") %>% 
+  select(Values_2022) -> Values_2022
+
+```
+Comparison
+```{r}
+full_join(gnomad_2_afro,gnomad_2_latino) %>% full_join(gnomad_2_europe) %>% full_join(gnomad_2_east_asia) %>% full_join(gnomad_2_south_asia) %>% full_join(gnomad_2_afro_total) %>% full_join(gnomad_2_europe_total) %>% full_join(gnomad_2_east_asia_total) %>% full_join(gnomad_2_latino_total) %>% full_join(gnomad_2_south_asia_total) %>% full_join(gnomad_afro) %>% full_join(gnomad_latino) %>% full_join(gnomad_europe) %>% full_join(gnomad_east_asia) %>% full_join(gnomad_south_asia) %>% full_join(gnomad_afro_total) %>% full_join(gnomad_europe_total) %>% full_join(gnomad_east_asia_total) %>% full_join(gnomad_latino_total) %>% full_join(gnomad_south_asia_total) %>% 
+  mutate("% annotated African 2022"=round((African_2022/African_2022_total)*100,2), 
+         "% annotated Latino 2022"=round((Latino_2022/Latino_2022_total)*100,2), 
+         "% annotated Europe 2022"=round((Europe_2022/Europe_2022_total)*100,2), 
+         "% annotated East asia 2022"=round((East_asia_2022/East_asia_2022_total)*100,2),
+         "% annotated South asia 2022"=round((South_asia_2022/South_asia_2022_total)*100,2),
+         "% annotated African"=round((African/African_total)*100,2), 
+         "% annotated Latino"=round((Latino/Latino_total)*100,2), 
+         "% annotated Europe"=round((Europe/Europe_total)*100,2), 
+         "% annotated East asia"=round((East_asia/East_asia_total)*100,2), 
+         "% annotated South asia"=round((South_asia/South_asia_total)*100,2)) %>%
+  select(-c(Europe_2022, East_asia_2022, African_2022, South_asia_2022, Latino_2022, Europe, East_asia, African, South_asia, Latino)) %>% 
+  rename(Europe_2022="% annotated Europe 2022",East_asia_2022="% annotated East asia 2022",Latino_2022="% annotated Latino 2022",South_asia_2022="% annotated South asia 2022",African_2022="% annotated African 2022",Europe="% annotated Europe",East_asia="% annotated East asia",Latino="% annotated Latino",South_asia="% annotated South asia",African="% annotated African") %>%
+  pivot_longer(cols=c(African, Latino, Europe, East_asia, South_asia), names_to = "Population", values_to = "Values") %>% add_column(Values_2022) %>% 
+  pivot_longer(cols = c(Values, Values_2022), values_to = "Percent_in_ClinVar", names_to = "Year") %>%
+  select(chromosome, Population, Percent_in_ClinVar, Year) %>% 
+  mutate(Year=case_when(Year=="Values"~"2023", Year=="Values_2022"~"2022"),
+         Population=case_when(Population=="Europe" ~ "Non-Finnish European", Population=="African" ~ "African American", Population=="Latino" ~ "Latino-admixed American", Population== "East_asia" ~ "East Asian", Population== "South_asia" ~ "South Asian"),
+         chromosome=case_when(chromosome == "atm" ~ "ATM",
+                          chromosome == "bard1" ~ "BARD1",
+                          chromosome == "brca1" ~ "BRCA1",
+                          chromosome == "brca2" ~ "BRCA2",
+                          chromosome == "chek2" ~ "CHEK2",
+                          chromosome == "palb2" ~ "PALB2",
+                          chromosome == "rad51c" ~ "RAD51C",
+                          chromosome == "rad51d" ~ "RAD51D",
+                          chromosome == "tp53" ~ "TP53")) %>% 
+  ggplot(aes(x=Population,y=Percent_in_ClinVar, shape=Population)) + 
+  geom_point() + 
+  geom_line(aes(group = Year, color=Year), linetype=6) + 
+  facet_wrap(~chromosome) + 
+  theme(axis.text.x = element_text(angle = 35, hjust=1)) + 
+  ylim(40, 100) + 
+  scale_x_discrete(limits = c("Non-Finnish European", "African American", "Latino-admixed American", "East Asian", "South Asian"), breaks = c("Non-Finnish European", "African American", "Latino-admixed American", "East Asian", "South Asian"), labels = c("Non-Finnish European" = "NFE", "African American" = "AFR", "Latino-admixed American" = "AMR", "East Asian" = "EAS", "South Asian" = "SAS")) + 
+  labs(title= "Comparison of annotation percentage of all populations between 2022 and 2023", y="Percentage annotated")
+ggsave(here("output/variant_difference.png"), width = 8, height = 6, dpi = 300)
+```
+
+```{r}
+full_join(gnomad_2_afro,gnomad_2_latino) %>% full_join(gnomad_2_europe) %>% full_join(gnomad_2_east_asia) %>% full_join(gnomad_2_south_asia) %>% full_join(gnomad_2_afro_total) %>% full_join(gnomad_2_europe_total) %>% full_join(gnomad_2_east_asia_total) %>% full_join(gnomad_2_latino_total) %>% full_join(gnomad_2_south_asia_total) %>% full_join(gnomad_afro) %>% full_join(gnomad_latino) %>% full_join(gnomad_europe) %>% full_join(gnomad_east_asia) %>% full_join(gnomad_south_asia) %>% full_join(gnomad_afro_total) %>% full_join(gnomad_europe_total) %>% full_join(gnomad_east_asia_total) %>% full_join(gnomad_latino_total) %>% full_join(gnomad_south_asia_total) %>% 
+  mutate("% annotated African 2022"=round((African_2022/African_2022_total)*100,2), 
+         "% annotated Latino 2022"=round((Latino_2022/Latino_2022_total)*100,2), 
+         "% annotated Europe 2022"=round((Europe_2022/Europe_2022_total)*100,2), 
+         "% annotated East asia 2022"=round((East_asia_2022/East_asia_2022_total)*100,2),
+         "% annotated South asia 2022"=round((South_asia_2022/South_asia_2022_total)*100,2),
+         "% annotated African"=round((African/African_total)*100,2), 
+         "% annotated Latino"=round((Latino/Latino_total)*100,2), 
+         "% annotated Europe"=round((Europe/Europe_total)*100,2), 
+         "% annotated East asia"=round((East_asia/East_asia_total)*100,2), 
+         "% annotated South asia"=round((South_asia/South_asia_total)*100,2)) %>%
+  select(-c(Europe_2022, East_asia_2022, African_2022, South_asia_2022, Latino_2022, Europe, East_asia, African, South_asia, Latino)) %>% 
+  rename(Europe_2022="% annotated Europe 2022",East_asia_2022="% annotated East asia 2022",Latino_2022="% annotated Latino 2022",South_asia_2022="% annotated South asia 2022",African_2022="% annotated African 2022",Europe="% annotated Europe",East_asia="% annotated East asia",Latino="% annotated Latino",South_asia="% annotated South asia",African="% annotated African") %>%
+  pivot_longer(cols=c(African, Latino, Europe, East_asia, South_asia), names_to = "Population", values_to = "Values") %>% add_column(Values_2022) %>% 
+  pivot_longer(cols = c(Values, Values_2022), values_to = "Percent_in_ClinVar", names_to = "Year") %>%
+  select(chromosome, Population, Percent_in_ClinVar, Year) %>% 
+  mutate(Year=case_when(Year=="Values"~"2023", Year=="Values_2022"~"2022"),
+         Population=case_when(Population=="Europe" ~ "Non-Finnish European", Population=="African" ~ "African American", Population=="Latino" ~ "Latino-admixed American", Population== "East_asia" ~ "East Asian", Population== "South_asia" ~ "South Asian")) %>% 
+  ggplot(aes(x=Population, y=Percent_in_ClinVar, shape=Population)) + 
+  geom_point() + 
+  geom_line(aes(group = Year, color=Year), linetype=6) + 
+  facet_wrap(~chromosome) + 
+  theme(axis.text.x = element_text(angle = 35, hjust=1)) + 
+  ylim(40, 100) + 
+scale_x_discrete(limits = c("Non-Finnish European", "African American", "Latino-admixed American", "East Asian", "South Asian"),
+                   breaks = c("Non-Finnish European", "African American", "Latino-admixed American", "East Asian", "South Asian"),
+                   labels = c("Non-Finnish European" = "NFE", "African American" = "AA", "Latino-admixed American" = "LAA", "East Asian" = "EA", "South Asian" = "SA")) +
+  labs(title = "Comparison of annotation percentage of all populations between 2022 and 2023", y = "Percentage annotated") +
+  scale_shape_manual(values = c("Non-Finnish European" = 16, "African American" = 17, "Latino-admixed American" = 18, "East Asian" = 19, "South Asian" = 20),
+                     name = "Population") +
+  scale_color_manual(values = c("2023" = "black", "2022" = "gray"),
+                     name = "Year",
+                     labels = c("2023" = "2023", "2022" = "2022"))
+```
+
+
+Tables 
+ATM
+African
+```{r}
+full_join(atm_african_table, atm_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/atm_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(atm_latino_table, atm_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/atm_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(atm_european_table, atm_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/atm_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(atm_east_asian_table, atm_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/atm_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(atm_south_asian_table, atm_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/atm_sa.csv"), row.names = F)
+```
+
+BARD1
+African
+```{r}
+full_join(bard1_african_table, bard1_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/bard1_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(bard1_latino_table, bard1_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/bard1_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(bard1_european_table, bard1_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/bard1_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(bard1_east_asian_table, bard1_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/bard1_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(bard1_south_asian_table, bard1_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/bard1_sa.csv"), row.names = F)
+```
+
+BRCA1
+African
+```{r}
+full_join(brca1_african_table, brca1_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca1_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(brca1_latino_table, brca1_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/brca1_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(brca1_european_table, brca1_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca1_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(brca1_east_asian_table, brca1_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca1_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(brca1_south_asian_table, brca1_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca1_sa.csv"), row.names = F)
+```
+
+BRCA2
+African
+```{r}
+full_join(brca2_african_table, brca2_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca2_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(brca2_latino_table, brca2_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/brca2_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(brca2_european_table, brca2_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca2_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(brca2_east_asian_table, brca2_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca2_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(brca2_south_asian_table, brca2_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/brca2_sa.csv"), row.names = F)
+```
+
+CHEK2
+African
+```{r}
+full_join(chek2_african_table, chek2_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/chek2_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(chek2_latino_table, chek2_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/chek2_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(chek2_european_table, chek2_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/chek2_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(chek2_east_asian_table, chek2_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/chek2_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(chek2_south_asian_table, chek2_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/chek2_sa.csv"), row.names = F)
+```
+
+PALB2
+African
+```{r}
+full_join(palb2_african_table, palb2_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/palb2_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(palb2_latino_table, palb2_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/palb2_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(palb2_european_table, palb2_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/palb2_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(palb2_east_asian_table, palb2_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/palb2_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(palb2_south_asian_table, palb2_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/palb2_sa.csv"), row.names = F)
+```
+
+RAD51C
+African
+```{r}
+full_join(rad51c_african_table, rad51c_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51c_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(rad51c_latino_table, rad51c_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/rad51c_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(rad51c_european_table, rad51c_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51c_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(rad51c_east_asian_table, rad51c_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51c_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(rad51c_south_asian_table, rad51c_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51c_sa.csv"), row.names = F)
+```
+
+RAD51D
+African
+```{r}
+full_join(rad51d_african_table, rad51d_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51d_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(rad51d_latino_table, rad51d_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/rad51d_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(rad51d_european_table, rad51d_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51d_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(rad51d_east_asian_table, rad51d_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51d_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(rad51d_south_asian_table, rad51d_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/rad51d_sa.csv"), row.names = F)
+```
+
+TP53
+African
+```{r}
+full_join(tp53_african_table, tp53_2_african_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/tp53_afr.csv"), row.names = F)
+```
+Latino
+```{r}
+full_join(tp53_latino_table, tp53_2_latino_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain) %>% write.csv(file=here("output/csv files/tp53_lat.csv"), row.names = F)
+```
+Europe
+```{r}
+full_join(tp53_european_table, tp53_2_european_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/tp53_nfe.csv"), row.names = F)
+```
+East Asia
+```{r}
+full_join(tp53_east_asian_table, tp53_2_east_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/tp53_ea.csv"), row.names = F)
+```
+South Asia
+```{r}
+full_join(tp53_south_asian_table, tp53_2_south_asian_table, by="vep_annotation") %>% 
+  rename(Pathogenic.x="Pathogenic/Likely Pathogenic.x", 
+         Pathogenic.y="Pathogenic/Likely Pathogenic.y",
+         Benign.x="Benign/Likely Benign.x",
+         Benign.y="Benign/Likely Benign.y",
+         Not_in_Clinvar.x= "Not in Clinvar.x",
+         Not_in_Clinvar.y= "Not in Clinvar.y",
+         Perc_in_Clinvar.x="% in ClinVar.x",
+         Perc_in_Clinvar.y="% in ClinVar.y",
+         Perc_Uncertain.x="% Uncertain.x",
+         Perc_Uncertain.y= "% Uncertain.y") %>% 
+  mutate(Total= Total.x-Total.y, 
+         In_ClinVar= In_ClinVar.x-In_ClinVar.y,
+         Pathogenic= Pathogenic.x-Pathogenic.y,
+         Benign= Benign.x-Benign.y,
+         Uncertain=Uncertain.x-Uncertain.y,
+         Not_in_Clinvar= Not_in_Clinvar.x-Not_in_Clinvar.y,
+         Perc_in_Clinvar= Perc_in_Clinvar.x-Perc_in_Clinvar.y,
+         Perc_Uncertain= Perc_Uncertain.x-Perc_Uncertain.y) %>% 
+  select(vep_annotation, Total, In_ClinVar, Pathogenic, Benign, Uncertain, Not_in_Clinvar, Perc_in_Clinvar, Perc_Uncertain)%>% write.csv(file=here("output/csv files/tp53_sa.csv"), row.names = F)
+```
