@@ -1,0 +1,1302 @@
+dbNSFP - Missense Variant - Separated into Population Specific and All of gnomAD for Rankscore violin graphs and prediction graphs -> Normalised further -> RMSD calculated
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+
+Population specific missense variants
+Rankscore graphs
+```{r}
+rankscore <- function(x, col_name){rankscore_unique[[col_name]]<- as.numeric(rankscore_unique[[col_name]])
+  rankscore_unique[[col_name]][rankscore_unique[[col_name]] == "."] <- NA
+  rankscore_unique %>% 
+    mutate(Clin_var_significance = case_when(Clin_var_significance == "blank" ~ "Unreported", 
+                                             TRUE ~ Clin_var_significance)) %>% 
+    filter(gene == x) %>% 
+    ggplot(aes(x = Clin_var_significance, y = .data[[col_name]])) + 
+    geom_violin(fill = "#0AD6F2", alpha = 0.4, width = 0.9) +
+    stat_summary(fun = "median", geom = "point", colour = "#0A2581", position = position_dodge(0.3))+
+    stat_summary(fun.data = "median_hilow", geom = "errorbar", colour = "#0A2581", width=0.3)+
+    ylim(0,1)+
+    xlim("Benign", "Pathogenic", "Uncertain", "Unreported")+ 
+    labs(x="ClinVar Clinical Significance")}
+
+#ATM
+rankscore("ATM", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of ATM gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/ATM_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of ATM gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/ATM_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of ATM gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/ATM_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of ATM gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/ATM_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of ATM gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/ATM_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of ATM gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/ATM_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of ATM gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/ATM_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of ATM gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/ATM_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of ATM gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/ATM_revel.png"), width = 8, height = 6, dpi = 300)
+
+rankscore("ATM", "CADD_raw_rankscore") + labs(y = "CADD raw rankscore") +   
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size=15))
+ggsave(here("output/ranks/ATM_caddraw.png"), width = 8, height = 6, dpi = 300)
+
+rankscore("ATM", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of ATM gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/ATM_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("ATM", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of ATM gene", y = "GERP rankscore")
+ggsave(here("output/ranks/ATM_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BARD1
+rankscore("BARD1", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of BARD1 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/BARD1_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of BARD1 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/BARD1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of BARD1 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/BARD1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of BARD1 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/BARD1_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of BARD1 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/BARD1_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of BARD1 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/BARD1_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of BARD1 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/BARD1_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of BARD1 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/BARD1_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of BARD1 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/BARD1_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of BARD1 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/BARD1_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of BARD1 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/BARD1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("BARD1", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of BARD1 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/BARD1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BRCA1
+rankscore("BRCA1", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of BRCA1 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/BRCA1_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of BRCA1 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/BRCA1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of BRCA1 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/BRCA1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of BRCA1 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/BRCA1_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of BRCA1 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/BRCA1_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of BRCA1 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/BRCA1_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of BRCA1 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/BRCA1_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of BRCA1 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/BRCA1_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of BRCA1 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/BRCA1_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of BRCA1 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/BRCA1_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of BRCA1 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/BRCA1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA1", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of BRCA1 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/BRCA1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BRCA2
+rankscore("BRCA2", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of BRCA2 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/BRCA2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of BRCA2 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/BRCA2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of BRCA2 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/BRCA2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of BRCA2 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/BRCA2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of BRCA2 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/BRCA2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of BRCA2 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/BRCA2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of BRCA2 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/BRCA2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of BRCA2 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/BRCA2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of BRCA2 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/BRCA2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of BRCA2 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/BRCA2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of BRCA2 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/BRCA2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("BRCA2", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of BRCA2 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/BRCA2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#CHEK2
+rankscore("CHEK2", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of CHEK2 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/CHEK2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of CHEK2 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/CHEK2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of CHEK2 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/CHEK2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of CHEK2 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/CHEK2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of CHEK2 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/CHEK2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of CHEK2 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/CHEK2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of CHEK2 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/CHEK2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of CHEK2 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/CHEK2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of CHEK2 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/CHEK2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of CHEK2 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/CHEK2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of CHEK2 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/CHEK2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("CHEK2", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of CHEK2 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/CHEK2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#PALB2
+rankscore("PALB2", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of PALB2 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/PALB2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of PALB2 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/PALB2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of PALB2 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/PALB2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of PALB2 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/PALB2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of PALB2 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/PALB2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of PALB2 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/PALB2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of PALB2 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/PALB2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of PALB2 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/PALB2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of PALB2 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/PALB2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of PALB2 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/PALB2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of PALB2 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/PALB2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("PALB2", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of PALB2 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/PALB2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#RAD51C
+rankscore("RAD51C", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of RAD51C gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/RAD51C_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of RAD51C gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/RAD51C_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of RAD51C gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/RAD51C_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of RAD51C gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/RAD51C_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of RAD51C gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/RAD51C_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of RAD51C gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/RAD51C_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of RAD51C gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/RAD51C_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of RAD51C gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/RAD51C_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of RAD51C gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/RAD51C_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of RAD51C gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/RAD51C_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of RAD51C gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/RAD51C_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51C", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of RAD51C gene", y = "GERP rankscore")
+ggsave(here("output/ranks/RAD51C_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#RAD51D
+rankscore("RAD51D", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of RAD51D gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/RAD51D_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of RAD51D gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/RAD51D_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of RAD51D gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/RAD51D_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of RAD51D gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/RAD51D_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of RAD51D gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/RAD51D_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of RAD51D gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/RAD51D_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of RAD51D gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/RAD51D_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of RAD51D gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/RAD51D_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of RAD51D gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/RAD51D_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of RAD51D gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/RAD51D_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of RAD51D gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/RAD51D_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("RAD51D", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of RAD51D gene", y = "GERP rankscore")
+ggsave(here("output/ranks/RAD51D_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#TP53
+rankscore("TP53", "SIFT_converted_rankscore") + labs(title = "SIFT rankscore for population specific missense variants of TP53 gene", y = "SIFT rankscore")
+ggsave(here("output/ranks/TP53_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "Polyphen2_HDIV_rankscore")+ labs(title = "Polyphen2 HDIV rankscore for population specific missense variants of TP53 gene", y = "Polyphen2 HDIV rankscore") 
+ggsave(here("output/ranks/TP53_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "Polyphen2_HVAR_rankscore") + labs(title = "Polyphen2 HVAR rankscore for population specific missense variants of TP53 gene", y = "Polyphen2 HVAR rankscore")
+ggsave(here("output/ranks/TP53_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "MetaLR_rankscore") + labs(title = "MetaLR rankscore for population specific missense variants of TP53 gene", y = "MetaLR rankscore")
+ggsave(here("output/ranks/TP53_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "MetaSVM_rankscore")+ labs(title = "MetaSVM rankscore for population specific missense variants of TP53 gene", y = "MetaSVM rankscore")
+ggsave(here("output/ranks/TP53_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "MutationAssessor_rankscore")+ labs(title = "Mutation Assessor rankscore for population specific missense variants of TP53 gene", y = "Mutation Assessor rankscore")
+ggsave(here("output/ranks/TP53_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "FATHMM_converted_rankscore") + labs(title = "FATHMM rankscore for population specific missense variants of TP53 gene", y = "FATHMM rankscore")
+ggsave(here("output/ranks/TP53_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "VEST4_rankscore") + labs(title = "VEST4 rankscore for population specific missense variants of TP53 gene", y = "VEST4 rankscore")
+ggsave(here("output/ranks/TP53_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "REVEL_rankscore") + labs(title = "REVEL rankscore for population specific missense variants of TP53 gene", y = "REVEL rankscore")
+ggsave(here("output/ranks/TP53_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "CADD_raw_rankscore") + labs(title = "CADD raw rankscore for population specific missense variants of TP53 gene", y = "CADD raw rankscore")
+ggsave(here("output/ranks/TP53_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "CADD_raw_rankscore_hg19")+ labs(title = "CADD hg19 raw rankscore for population specific missense variants of TP53 gene", y = "CADD hg19 raw rankscore")
+ggsave(here("output/ranks/TP53_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore("TP53", "GERP_RS_rankscore") + labs(title = "GERP rankscore for population specific missense variants of TP53 gene", y = "GERP rankscore")
+ggsave(here("output/ranks/TP53_gerprs.png"), width = 8, height = 6, dpi = 300)
+```
+Prediction
+```{r}
+prediction <- function(x) {pred_alpha_unique %>% filter(gene==x) %>% filter(blank_count!=7) %>% mutate(Clin_var_significance = case_when(Clin_var_significance =="blank" ~ "Unreported", TRUE ~ Clin_var_significance)) %>% unite(test, gene, Clin_var_significance, sep = " ") %>% group_by(test) %>% count(count) %>% separate(test, into = (c("gene","Clin_var_significance")), sep=" ") %>% filter(Clin_var_significance!="Uncertain") %>%   ggplot(aes(x=as.character(count), y=n, fill = Clin_var_significance)) + geom_col(position = "dodge") + labs(title = x, x="Number of algorithms predicted damaging", y= "count")+ xlim("0","1","2", "3", "4", "5","6", "7") + scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))}
+
+prediction("ATM")
+ggsave(here("output/pred/ATM_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BARD1")
+ggsave(here("output/pred/BARD1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BRCA1")
+ggsave(here("output/pred/BRCA1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("BRCA2")
+ggsave(here("output/pred/BRCA2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("CHEK2")
+ggsave(here("output/pred/CHEK2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("PALB2")
+ggsave(here("output/pred/PALB2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("RAD51C")
+ggsave(here("output/pred/RAD51C_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("RAD51D")
+ggsave(here("output/pred/RAD51D_pred.png"), width = 8, height = 6, dpi = 300)
+prediction("TP53")
+ggsave(here("output/pred/TP53_pred.png"), width = 8, height = 6, dpi = 300)
+```
+Wilcoxon function
+```{r}
+wilcoxon <- function(x,y,z){
+  rankscore_unique[[z]]<- as.numeric(rankscore_unique[[z]])
+  rankscore_unique %>% 
+    filter(gene==x) %>% 
+    filter(Clin_var_significance=="Uncertain"|Clin_var_significance==y) %>% 
+    filter(.data[[z]]!=".") %>% 
+    filter(!is.na(.data[[z]])) %>% 
+    rename("z"=.data[[z]]) %>% 
+    wilcox_test(z~Clin_var_significance) %>% 
+    add_column(gene = x, .before=".y.") %>% 
+    add_column(prediciton = z,.after ="gene") %>% 
+    unite(group, group1, group2) %>% 
+    select(-c(.y., n1, n2))}
+```
+Normalised
+```{r}
+pred_alpha_unique %>%
+  filter(gene == "ATM" , blank_count <4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>%
+  ggplot(aes(x = count, y = normalised, colour = Clin_var_significance)) +
+  geom_line() +
+  geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for ATM", x = "Number of prediction algorithms", y= "Percentage") +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/ATM.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="BARD1" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>% 
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>%  
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) +   geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for BARD1", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/BARD1.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="BRCA1" , blank_count <4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for BRCA1", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/BRCA1.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="BRCA2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>%  
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) +   geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for BRAC2", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/BRCA2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="CHEK2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>%   
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for CHEK2", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/CHEK2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="PALB2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for PALB2", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/PALB2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="RAD51C" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) +   geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for RAD51C", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/RAD51C.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="RAD51D" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for RAD51D", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/RAD51D.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(gene=="TP53" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms for TP53", x = "Number of prediction algorithms", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/TP53.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_unique %>%
+  filter(blank_count<4, ambig_count==0) %>%
+  mutate(Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + facet_wrap(~gene) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms", x = "Number of pathogenic predictions", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal pop spec/all.png"), width = 8, height = 6, dpi = 300)
+```
+RMSD
+```{r}
+rmsd_pop <- function(x) {pred_alpha_unique %>%
+  filter(gene == x, blank_count <2, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  select(-c(gene, n)) %>% 
+  pivot_wider(names_from = Clin_var_significance, values_from = normalised) %>%
+  mutate(rms_uncertain = round(sqrt((sum((Unreported - Uncertain)^2))/8),2),
+         rms_pathogenic= round(sqrt((sum((Unreported - Pathogenic)^2))/8),2),
+         rms_benign = round(sqrt((sum((Unreported - Benign)^2))/8),2)) %>% 
+  pivot_longer(cols = c(Benign, Pathogenic, Uncertain, Unreported) , names_to = "Clin_var_sig", values_to = "normalised") %>% 
+  mutate(rmsd = ifelse(Clin_var_sig == "Benign", rms_benign, 
+                       ifelse(Clin_var_sig == "Pathogenic", rms_pathogenic,
+                              ifelse(Clin_var_sig == "Uncertain", rms_uncertain,0)))) %>% 
+  select(Clin_var_sig, rmsd) %>% 
+  group_by(Clin_var_sig) %>% 
+  summarise(rmsd = mean(rmsd)) %>% 
+  rename("ClinVar Clinical Significance" = "Clin_var_sig")}
+rmsd_pop_nopath <- function(x) {pred_alpha_unique %>%
+  filter(gene == x, blank_count<2, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  ungroup(test) %>% 
+  add_row(test="BARD1 Pathogenic", count=0, n=0) %>% 
+  group_by(test) %>% 
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  select(-c(gene, n)) %>% 
+  pivot_wider(names_from = Clin_var_significance, values_from = normalised) %>%
+  mutate(rms_uncertain = round(sqrt((sum((Unreported - Uncertain)^2))/8),2),
+         rms_pathogenic= round(sqrt((sum((Unreported - Pathogenic)^2))/8),2),
+         rms_benign = round(sqrt((sum((Unreported - Benign)^2))/8),2)) %>% 
+  pivot_longer(cols = c(Benign, Pathogenic, Uncertain, Unreported) , names_to = "Clin_var_sig", values_to = "normalised") %>% 
+  mutate(rmsd = ifelse(Clin_var_sig == "Benign", rms_benign, 
+                       ifelse(Clin_var_sig == "Pathogenic", rms_pathogenic,
+                              ifelse(Clin_var_sig == "Uncertain", rms_uncertain,0)))) %>% 
+  select(Clin_var_sig, rmsd) %>% 
+  group_by(Clin_var_sig) %>% 
+  summarise(rmsd = mean(rmsd)) %>% 
+  rename("ClinVar Clinical Significance" = "Clin_var_sig")}
+
+rmsd_pop("ATM") %>% write.csv(file = here("output/csv files/rmsd/ATM_pop.csv"), row.names = F)
+rmsd_pop_nopath("BARD1") %>% write.csv(file = here("output/csv files/rmsd/BARD1_pop.csv"), row.names = F)
+rmsd_pop("BRCA1") %>% write.csv(file = here("output/csv files/rmsd/BRCA1_pop.csv"), row.names = F)
+rmsd_pop("BRCA2") %>% write.csv(file = here("output/csv files/rmsd/BRCA2_pop.csv"), row.names = F)
+rmsd_pop_nopath("CHEK2") %>% write.csv(file = here("output/csv files/rmsd/CHEK2_pop.csv"), row.names = F)
+rmsd_pop_nopath("PALB2") %>% write.csv(file = here("output/csv files/rmsd/PALB2_pop.csv"), row.names = F)
+rmsd_pop("RAD51C") %>% write.csv(file = here("output/csv files/rmsd/RAD51C_pop.csv"), row.names = F)
+rmsd_pop_nopath("RAD51D")%>% write.csv(file = here("output/csv files/rmsd/RAD51D_pop.csv"), row.names = F)
+rmsd_pop("TP53") %>% write.csv(file = here("output/csv files/rmsd/TP53_pop.csv"), row.names = F)
+
+rmsd_pop_ATM <- rmsd_pop("ATM") %>% rename(ATM = "rmsd")
+rmsd_pop_BARD1 <- rmsd_pop_nopath("BARD1") %>% rename(BARD1 = "rmsd")
+rmsd_pop_BRCA1 <- rmsd_pop("BRCA1") %>% rename(BRCA1 = "rmsd")
+rmsd_pop_BRCA2 <- rmsd_pop("BRCA2") %>% rename(BRCA2 = "rmsd")
+rmsd_pop_CHEK2 <- rmsd_pop_nopath("CHEK2") %>% rename(CHEK2 = "rmsd")
+rmsd_pop_PALB2 <- rmsd_pop_nopath("PALB2") %>% rename(PALB2 = "rmsd")
+rmsd_pop_RAD51C <- rmsd_pop("RAD51C") %>% rename(RAD51C = "rmsd")
+rmsd_pop_RAD51D <- rmsd_pop_nopath("RAD51D") %>% rename(RAD51D = "rmsd")
+rmsd_pop_TP53 <- rmsd_pop("TP53") %>% rename(TP53 = "rmsd")
+
+inner_join(rmsd_pop_ATM, rmsd_pop_BARD1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_BRCA1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_BRCA2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_CHEK2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_PALB2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_RAD51C, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_RAD51D, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_pop_TP53, by= "ClinVar Clinical Significance") %>% 
+  arrange(ATM) %>% write.csv(file = here("output/csv files/RMSD_pop.csv"))
+```
+
+All missense Variants
+```{r}
+dbNSFP_pred <- dbNSFP_prediction %>% rename("variant_id"="dbNSFP")
+dbNSFP_ranks <- dbNSFP_rankscores %>% rename("variant_id"="dbNSFP")
+
+gnomad_pred <- full_join(dbNSFP_pred, skipped_pred) %>% rename("gene"="genename")
+gnomad_rs <- full_join(dbNSFP_ranks, skipped_rankscores) %>% rename("gene"="genename")
+
+gnomad_inner <- gnomad %>% rename(gene=chromosome) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene) %>% 
+  unite(variant_id, chromosome, position, reference, alternate, sep = " ") %>% 
+  select(variant_id, clin_var_clinical_significance)
+
+
+gnomad_pred <- inner_join(gnomad_pred, gnomad_inner) %>%
+  rename("Clin_var_significance"="clin_var_clinical_significance") %>% 
+  mutate(Clin_var_significance=case_when(is.na(Clin_var_significance)~"blank", TRUE~Clin_var_significance))
+gnomad_rs <- inner_join(gnomad_rs, gnomad_inner) %>%
+  rename("Clin_var_significance"="clin_var_clinical_significance") %>% 
+  mutate(Clin_var_significance=case_when(is.na(Clin_var_significance)~"blank", TRUE~Clin_var_significance))
+```
+Rankscore
+```{r}
+rankscore_gnomad <- function(x, col_name){gnomad_rs[[col_name]]<- as.numeric(gnomad_rs[[col_name]])
+  gnomad_rs[[col_name]][gnomad_rs[[col_name]] == "."] <- NA
+  gnomad_rs %>% 
+    filter(gene == x) %>% 
+    ggplot(aes(x = Clin_var_significance, y = .data[[col_name]])) + 
+    geom_violin(fill = "#0AD6F2", alpha = 0.4, width = 0.9) +
+    stat_summary(fun = "median", geom = "point", colour = "#0A2581", position = position_dodge(0.3))+
+    stat_summary(fun.data = "median_hilow", geom = "errorbar", colour = "#0A2581", width=0.3)+
+    ylim(0,1)+
+    xlim("Benign", "Pathogenic", "Uncertain", "blank")}
+
+#ATM
+rankscore_gnomad("ATM", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/ATM_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/ATM_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/ATM_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/ATM_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("ATM", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/ATM_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BARD1
+rankscore_gnomad("BARD1", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/BARD1_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/BARD1_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/BARD1_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/BARD1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BARD1", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/BARD1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BRCA1
+rankscore_gnomad("BRCA1", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/BRCA1_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/BRCA1_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/BRCA1_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/BRCA1_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA1", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA1_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#BRCA2
+rankscore_gnomad("BRCA2", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/BRCA2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/BRCA2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/BRCA2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/BRCA2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("BRCA2", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/BRCA2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#CHEK2
+rankscore_gnomad("CHEK2", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/CHEK2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/CHEK2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/CHEK2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/CHEK2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("CHEK2", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/CHEK2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#PALB2
+rankscore_gnomad("PALB2", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/PALB2_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/PALB2_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/PALB2_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/PALB2_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("PALB2", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/PALB2_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#RAD51C
+rankscore_gnomad("RAD51C", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/RAD51C_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/RAD51C_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/RAD51C_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/RAD51C_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51C", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51C_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#RAD51D
+rankscore_gnomad("RAD51D", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/RAD51D_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/RAD51D_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/RAD51D_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/RAD51D_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("RAD51D", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/RAD51D_gerprs.png"), width = 8, height = 6, dpi = 300)
+
+#TP53
+rankscore_gnomad("TP53", "SIFT_converted_rankscore")
+ggsave(here("output/ranks gnomad/TP53_sift.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "Polyphen2_HDIV_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_poly2hdiv.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "Polyphen2_HVAR_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_poly2hvar.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "MetaLR_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_metalr.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "MetaSVM_rankscore")
+ggsave(here("output/ranks gnomad/TP53_metasvm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "MutationAssessor_rankscore")
+ggsave(here("output/ranks gnomad/TP53_ma.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "FATHMM_converted_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_fathmm.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "VEST4_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_vest4.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "REVEL_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_revel.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "CADD_raw_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_caddraw.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "CADD_raw_rankscore_hg19")
+ggsave(here("output/ranks gnomad/TP53_caddhg19.png"), width = 8, height = 6, dpi = 300)
+rankscore_gnomad("TP53", "GERP_RS_rankscore") 
+ggsave(here("output/ranks gnomad/TP53_gerprs.png"), width = 8, height = 6, dpi = 300)
+```
+Prediction
+```{r}
+prediction_gnomad <- function(x) {pred_alpha_all %>% filter(gene==x) %>% filter(blank_count!=7) %>% mutate(Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", T~Clin_var_significance)) %>% unite(test, gene, Clin_var_significance, sep = " ") %>% group_by(test) %>% count(count) %>% separate(test, into = (c("gene","Clin_var_significance")), sep=" ") %>% filter(Clin_var_significance!="Uncertain") %>%   ggplot(aes(x=as.character(count), y=n, fill = Clin_var_significance)) + geom_col(position = "dodge") + labs(title = x, x="Number of algorithms predicted damaging", y= "count")+ xlim("0","1","2", "3", "4", "5","6","7")+ scale_fill_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))}
+
+prediction_gnomad("ATM")
+ggsave(here("output/pred gnomad/ATM_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("BARD1")
+ggsave(here("output/pred gnomad/BARD1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("BRCA1")
+ggsave(here("output/pred gnomad/BRCA1_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("BRCA2")
+ggsave(here("output/pred gnomad/BRCA2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("CHEK2")
+ggsave(here("output/pred gnomad/CHEK2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("PALB2")
+ggsave(here("output/pred gnomad/PALB2_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("RAD51C")
+ggsave(here("output/pred gnomad/RAD51C_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("RAD51D")
+ggsave(here("output/pred gnomad/RAD51D_pred.png"), width = 8, height = 6, dpi = 300)
+prediction_gnomad("TP53")
+ggsave(here("output/pred gnomad/TP53_pred.png"), width = 8, height = 6, dpi = 300)
+```
+Wilcoxon
+```{r}
+wilcoxon <- function(x,y,z){
+  gnomad_rs[[z]]<- as.numeric(gnomad_rs[[z]])
+  gnomad_rs %>% 
+    filter(gene==x) %>% 
+    filter(Clin_var_significance=="blank"|Clin_var_significance==y) %>% 
+    filter(.data[[z]]!=".") %>% 
+    filter(!is.na(.data[[z]])) %>% 
+    rename("z"=.data[[z]]) %>% 
+    wilcox_test(z~Clin_var_significance) %>% 
+    add_column(gene = x, .before=".y.") %>% 
+    add_column(prediciton = z,.after ="gene") %>% 
+    unite(group, group1, group2) %>% 
+    select(-c(.y., n1, n2))}
+
+#ATM
+atmbensift <- wilcoxon("ATM", "Benign", "SIFT_converted_rankscore")
+atmpathsift <- wilcoxon("ATM", "Pathogenic", "SIFT_converted_rankscore")
+atmbenhdiv <- wilcoxon("ATM", "Benign", "Polyphen2_HDIV_rankscore")
+atmpathhdiv <- wilcoxon("ATM", "Pathogenic", "Polyphen2_HDIV_rankscore")
+atmbenhvar <- wilcoxon("ATM", "Benign", "Polyphen2_HVAR_rankscore")
+atmpathhvar <- wilcoxon("ATM", "Pathogenic", "Polyphen2_HVAR_rankscore")
+atmbenmetal <- wilcoxon("ATM", "Benign", "MetaLR_rankscore")
+atmpathmetal <- wilcoxon("ATM", "Pathogenic", "MetaLR_rankscore")
+atmbenmetas <- wilcoxon("ATM", "Benign", "MetaSVM_rankscore")
+atmpathmetas <- wilcoxon("ATM", "Pathogenic", "MetaSVM_rankscore")
+atmbenmassess <- wilcoxon("ATM", "Benign", "MutationAssessor_rankscore")
+atmpathmassess <- wilcoxon("ATM", "Pathogenic", "MutationAssessor_rankscore")
+atmbenfath <- wilcoxon("ATM", "Benign", "FATHMM_converted_rankscore")
+atmpathfath <- wilcoxon("ATM", "Pathogenic", "FATHMM_converted_rankscore")
+atmbenvest <- wilcoxon("ATM", "Benign", "VEST4_rankscore")
+atmpathvest <- wilcoxon("ATM", "Pathogenic", "VEST4_rankscore")
+atmbenrevel <- wilcoxon("ATM", "Benign", "REVEL_rankscore")
+atmpathrevel <- wilcoxon("ATM", "Pathogenic", "REVEL_rankscore")
+atmbencadd <- wilcoxon("ATM", "Benign", "CADD_raw_rankscore")
+atmpathcadd <- wilcoxon("ATM", "Pathogenic", "CADD_raw_rankscore")
+atmbencaddhg19 <- wilcoxon("ATM", "Benign", "CADD_raw_rankscore_hg19")
+atmpathcaddhg19 <- wilcoxon("ATM", "Pathogenic", "CADD_raw_rankscore_hg19")
+atmbengerp <- wilcoxon("ATM", "Benign", "GERP_RS_rankscore")
+atmpathgerp <- wilcoxon("ATM", "Pathogenic", "GERP_RS_rankscore")
+
+atm_wilcox <- full_join(atmbensift, atmpathsift) %>% full_join(atmbenhdiv) %>% full_join(atmpathhdiv) %>% full_join(atmbenhvar) %>% full_join(atmpathhvar) %>% full_join(atmbenmetal) %>% full_join(atmpathmetal) %>% full_join(atmbenmetas) %>% full_join(atmpathmetas) %>% full_join(atmbenmassess) %>% full_join(atmpathmassess) %>% full_join(atmbenfath) %>% full_join(atmpathfath) %>% full_join(atmbenvest) %>% full_join(atmpathvest) %>% full_join(atmbenrevel) %>% full_join(atmpathrevel) %>% full_join(atmbencadd) %>% full_join(atmpathcadd) %>% full_join(atmbencaddhg19) %>% full_join(atmpathcaddhg19) %>% full_join(atmbengerp) %>% full_join(atmpathgerp)
+
+#BARD1
+bard1bensift <- wilcoxon("BARD1", "Benign", "SIFT_converted_rankscore")
+bard1benhdiv <- wilcoxon("BARD1", "Benign", "Polyphen2_HDIV_rankscore")
+bard1benhvar <- wilcoxon("BARD1", "Benign", "Polyphen2_HVAR_rankscore")
+bard1benmetal <- wilcoxon("BARD1", "Benign", "MetaLR_rankscore")
+bard1benmetas <- wilcoxon("BARD1", "Benign", "MetaSVM_rankscore")
+bard1benmassess <- wilcoxon("BARD1", "Benign", "MutationAssessor_rankscore")
+bard1benfath <- wilcoxon("BARD1", "Benign", "FATHMM_converted_rankscore")
+bard1benvest <- wilcoxon("BARD1", "Benign", "VEST4_rankscore")
+bard1benrevel <- wilcoxon("BARD1", "Benign", "REVEL_rankscore")
+bard1bencadd <- wilcoxon("BARD1", "Benign", "CADD_raw_rankscore")
+bard1bencaddhg19 <- wilcoxon("BARD1", "Benign", "CADD_raw_rankscore_hg19")
+bard1bengerp <- wilcoxon("BARD1", "Benign", "GERP_RS_rankscore")
+
+bard1_wilcox <- full_join(bard1bensift,bard1benhdiv)  %>% full_join(bard1benhvar) %>%  full_join(bard1benmetal) %>%  full_join(bard1benmetas)  %>% full_join(bard1benmassess)  %>% full_join(bard1benfath)  %>% full_join(bard1benvest) %>% full_join(bard1benrevel)  %>% full_join(bard1bencadd) %>%  full_join(bard1bencaddhg19) %>%  full_join(bard1bengerp)
+
+#BRCA1
+brca1bensift <- wilcoxon("BRCA1", "Benign", "SIFT_converted_rankscore")
+brca1pathsift <- wilcoxon("BRCA1", "Pathogenic", "SIFT_converted_rankscore")
+brca1benhdiv <- wilcoxon("BRCA1", "Benign", "Polyphen2_HDIV_rankscore")
+brca1pathhdiv <- wilcoxon("BRCA1", "Pathogenic", "Polyphen2_HDIV_rankscore")
+brca1benhvar <- wilcoxon("BRCA1", "Benign", "Polyphen2_HVAR_rankscore")
+brca1pathhvar <- wilcoxon("BRCA1", "Pathogenic", "Polyphen2_HVAR_rankscore")
+brca1benmetal <- wilcoxon("BRCA1", "Benign", "MetaLR_rankscore")
+brca1pathmetal <- wilcoxon("BRCA1", "Pathogenic", "MetaLR_rankscore")
+brca1benmetas <- wilcoxon("BRCA1", "Benign", "MetaSVM_rankscore")
+brca1pathmetas <- wilcoxon("BRCA1", "Pathogenic", "MetaSVM_rankscore")
+brca1benmassess <- wilcoxon("BRCA1", "Benign", "MutationAssessor_rankscore")
+brca1pathmassess <- wilcoxon("BRCA1", "Pathogenic", "MutationAssessor_rankscore")
+brca1benfath <- wilcoxon("BRCA1", "Benign", "FATHMM_converted_rankscore")
+brca1pathfath <- wilcoxon("BRCA1", "Pathogenic", "FATHMM_converted_rankscore")
+brca1benvest <- wilcoxon("BRCA1", "Benign", "VEST4_rankscore")
+brca1pathvest <- wilcoxon("BRCA1", "Pathogenic", "VEST4_rankscore")
+brca1benrevel <- wilcoxon("BRCA1", "Benign", "REVEL_rankscore")
+brca1pathrevel <- wilcoxon("BRCA1", "Pathogenic", "REVEL_rankscore")
+brca1bencadd <- wilcoxon("BRCA1", "Benign", "CADD_raw_rankscore")
+brca1pathcadd <- wilcoxon("BRCA1", "Pathogenic", "CADD_raw_rankscore")
+brca1bencaddhg19 <- wilcoxon("BRCA1", "Benign", "CADD_raw_rankscore_hg19")
+brca1pathcaddhg19 <- wilcoxon("BRCA1", "Pathogenic", "CADD_raw_rankscore_hg19")
+brca1bengerp <- wilcoxon("BRCA1", "Benign", "GERP_RS_rankscore")
+brca1pathgerp <- wilcoxon("BRCA1", "Pathogenic", "GERP_RS_rankscore")
+
+brca1_wilcox <- full_join(brca1bensift, brca1pathsift) %>% full_join(brca1benhdiv) %>% full_join(brca1pathhdiv) %>% full_join(brca1benhvar) %>% full_join(brca1pathhvar) %>% full_join(brca1benmetal) %>% full_join(brca1pathmetal) %>% full_join(brca1benmetas) %>% full_join(brca1pathmetas) %>% full_join(brca1benmassess) %>% full_join(brca1pathmassess) %>% full_join(brca1benfath) %>% full_join(brca1pathfath) %>% full_join(brca1benvest) %>% full_join(brca1pathvest) %>% full_join(brca1benrevel) %>% full_join(brca1pathrevel) %>% full_join(brca1bencadd) %>% full_join(brca1pathcadd) %>% full_join(brca1bencaddhg19) %>% full_join(brca1pathcaddhg19) %>% full_join(brca1bengerp) %>% full_join(brca1pathgerp)
+
+#BRCA2
+brca2bensift <- wilcoxon("BRCA2", "Benign", "SIFT_converted_rankscore")
+brca2pathsift <- wilcoxon("BRCA2", "Pathogenic", "SIFT_converted_rankscore")
+brca2benmetal <- wilcoxon("BRCA2", "Benign", "MetaLR_rankscore")
+brca2pathmetal <- wilcoxon("BRCA2", "Pathogenic", "MetaLR_rankscore")
+brca2benmetas <- wilcoxon("BRCA2", "Benign", "MetaSVM_rankscore")
+brca2pathmetas <- wilcoxon("BRCA2", "Pathogenic", "MetaSVM_rankscore")
+brca2benfath <- wilcoxon("BRCA2", "Benign", "FATHMM_converted_rankscore")
+brca2pathfath <- wilcoxon("BRCA2", "Pathogenic", "FATHMM_converted_rankscore")
+brca2benvest <- wilcoxon("BRCA2", "Benign", "VEST4_rankscore")
+brca2pathvest <- wilcoxon("BRCA2", "Pathogenic", "VEST4_rankscore")
+brca2benrevel <- wilcoxon("BRCA2", "Benign", "REVEL_rankscore")
+brca2pathrevel <- wilcoxon("BRCA2", "Pathogenic", "REVEL_rankscore")
+brca2bencadd <- wilcoxon("BRCA2", "Benign", "CADD_raw_rankscore")
+brca2pathcadd <- wilcoxon("BRCA2", "Pathogenic", "CADD_raw_rankscore")
+brca2bencaddhg19 <- wilcoxon("BRCA2", "Benign", "CADD_raw_rankscore_hg19")
+brca2pathcaddhg19 <- wilcoxon("BRCA2", "Pathogenic", "CADD_raw_rankscore_hg19")
+brca2bengerp <- wilcoxon("BRCA2", "Benign", "GERP_RS_rankscore")
+brca2pathgerp <- wilcoxon("BRCA2", "Pathogenic", "GERP_RS_rankscore")
+
+brca2_wilcox <- full_join(brca2bensift, brca2pathsift) %>% full_join(brca2benmetal) %>% full_join(brca2pathmetal) %>% full_join(brca2benmetas) %>% full_join(brca2pathmetas) %>%  full_join(brca2benfath) %>% full_join(brca2pathfath) %>% full_join(brca2benvest) %>% full_join(brca2pathvest) %>% full_join(brca2benrevel) %>% full_join(brca2pathrevel) %>% full_join(brca2bencadd) %>% full_join(brca2pathcadd) %>% full_join(brca2bencaddhg19) %>% full_join(brca2pathcaddhg19) %>% full_join(brca2bengerp) %>% full_join(brca2pathgerp)
+
+#CHEK2
+chek2bensift <- wilcoxon("CHEK2", "Benign", "SIFT_converted_rankscore")
+chek2pathsift <- wilcoxon("CHEK2", "Pathogenic", "SIFT_converted_rankscore")
+chek2benhdiv <- wilcoxon("CHEK2", "Benign", "Polyphen2_HDIV_rankscore")
+chek2pathhdiv <- wilcoxon("CHEK2", "Pathogenic", "Polyphen2_HDIV_rankscore")
+chek2benhvar <- wilcoxon("CHEK2", "Benign", "Polyphen2_HVAR_rankscore")
+chek2pathhvar <- wilcoxon("CHEK2", "Pathogenic", "Polyphen2_HVAR_rankscore")
+chek2benmetal <- wilcoxon("CHEK2", "Benign", "MetaLR_rankscore")
+chek2pathmetal <- wilcoxon("CHEK2", "Pathogenic", "MetaLR_rankscore")
+chek2benmetas <- wilcoxon("CHEK2", "Benign", "MetaSVM_rankscore")
+chek2pathmetas <- wilcoxon("CHEK2", "Pathogenic", "MetaSVM_rankscore")
+chek2benmassess <- wilcoxon("CHEK2", "Benign", "MutationAssessor_rankscore")
+chek2pathmassess <- wilcoxon("CHEK2", "Pathogenic", "MutationAssessor_rankscore")
+chek2benfath <- wilcoxon("CHEK2", "Benign", "FATHMM_converted_rankscore")
+chek2pathfath <- wilcoxon("CHEK2", "Pathogenic", "FATHMM_converted_rankscore")
+chek2benvest <- wilcoxon("CHEK2", "Benign", "VEST4_rankscore")
+chek2pathvest <- wilcoxon("CHEK2", "Pathogenic", "VEST4_rankscore")
+chek2benrevel <- wilcoxon("CHEK2", "Benign", "REVEL_rankscore")
+chek2pathrevel <- wilcoxon("CHEK2", "Pathogenic", "REVEL_rankscore")
+chek2bencadd <- wilcoxon("CHEK2", "Benign", "CADD_raw_rankscore")
+chek2pathcadd <- wilcoxon("CHEK2", "Pathogenic", "CADD_raw_rankscore")
+chek2bencaddhg19 <- wilcoxon("CHEK2", "Benign", "CADD_raw_rankscore_hg19")
+chek2pathcaddhg19 <- wilcoxon("CHEK2", "Pathogenic", "CADD_raw_rankscore_hg19")
+chek2bengerp <- wilcoxon("CHEK2", "Benign", "GERP_RS_rankscore")
+chek2pathgerp <- wilcoxon("CHEK2", "Pathogenic", "GERP_RS_rankscore")
+
+chek2_wilcox <- full_join(chek2bensift, chek2pathsift) %>% full_join(chek2benhdiv) %>% full_join(chek2pathhdiv) %>% full_join(chek2benhvar) %>% full_join(chek2pathhvar) %>% full_join(chek2benmetal) %>% full_join(chek2pathmetal) %>% full_join(chek2benmetas) %>% full_join(chek2pathmetas) %>% full_join(chek2benmassess) %>% full_join(chek2pathmassess) %>% full_join(chek2benfath) %>% full_join(chek2pathfath) %>% full_join(chek2benvest) %>% full_join(chek2pathvest) %>% full_join(chek2benrevel) %>% full_join(chek2pathrevel) %>% full_join(chek2bencadd) %>% full_join(chek2pathcadd) %>% full_join(chek2bencaddhg19) %>% full_join(chek2pathcaddhg19) %>% full_join(chek2bengerp) %>% full_join(chek2pathgerp)
+
+#PALB2
+palb2bensift <- wilcoxon("PALB2", "Benign", "SIFT_converted_rankscore")
+palb2benhdiv <- wilcoxon("PALB2", "Benign", "Polyphen2_HDIV_rankscore")
+palb2benhvar <- wilcoxon("PALB2", "Benign", "Polyphen2_HVAR_rankscore")
+palb2benmetal <- wilcoxon("PALB2", "Benign", "MetaLR_rankscore")
+palb2benmetas <- wilcoxon("PALB2", "Benign", "MetaSVM_rankscore")
+palb2benmassess <- wilcoxon("PALB2", "Benign", "MutationAssessor_rankscore")
+palb2benfath <- wilcoxon("PALB2", "Benign", "FATHMM_converted_rankscore")
+palb2benvest <- wilcoxon("PALB2", "Benign", "VEST4_rankscore")
+palb2benrevel <- wilcoxon("PALB2", "Benign", "REVEL_rankscore")
+palb2bencadd <- wilcoxon("PALB2", "Benign", "CADD_raw_rankscore")
+palb2bencaddhg19 <- wilcoxon("PALB2", "Benign", "CADD_raw_rankscore_hg19")
+palb2bengerp <- wilcoxon("PALB2", "Benign", "GERP_RS_rankscore")
+
+palb2_wilcox <- full_join(palb2bensift, palb2benhdiv) %>%  full_join(palb2benhvar) %>%  full_join(palb2benmetal) %>% full_join(palb2benmetas) %>% full_join(palb2benmassess) %>%  full_join(palb2benfath) %>% full_join(palb2benvest) %>%  full_join(palb2benrevel) %>%  full_join(palb2bencadd) %>%  full_join(palb2bencaddhg19) %>% full_join(palb2bengerp) 
+
+#RAD51C
+rad51cbensift <- wilcoxon("RAD51C", "Benign", "SIFT_converted_rankscore")
+rad51cpathsift <- wilcoxon("RAD51C", "Pathogenic", "SIFT_converted_rankscore")
+rad51cbenhdiv <- wilcoxon("RAD51C", "Benign", "Polyphen2_HDIV_rankscore")
+rad51cpathhdiv <- wilcoxon("RAD51C", "Pathogenic", "Polyphen2_HDIV_rankscore")
+rad51cbenhvar <- wilcoxon("RAD51C", "Benign", "Polyphen2_HVAR_rankscore")
+rad51cpathhvar <- wilcoxon("RAD51C", "Pathogenic", "Polyphen2_HVAR_rankscore")
+rad51cbenmetal <- wilcoxon("RAD51C", "Benign", "MetaLR_rankscore")
+rad51cpathmetal <- wilcoxon("RAD51C", "Pathogenic", "MetaLR_rankscore")
+rad51cbenmetas <- wilcoxon("RAD51C", "Benign", "MetaSVM_rankscore")
+rad51cpathmetas <- wilcoxon("RAD51C", "Pathogenic", "MetaSVM_rankscore")
+rad51cbenmassess <- wilcoxon("RAD51C", "Benign", "MutationAssessor_rankscore")
+rad51cpathmassess <- wilcoxon("RAD51C", "Pathogenic", "MutationAssessor_rankscore")
+rad51cbenfath <- wilcoxon("RAD51C", "Benign", "FATHMM_converted_rankscore")
+rad51cpathfath <- wilcoxon("RAD51C", "Pathogenic", "FATHMM_converted_rankscore")
+rad51cbenvest <- wilcoxon("RAD51C", "Benign", "VEST4_rankscore")
+rad51cpathvest <- wilcoxon("RAD51C", "Pathogenic", "VEST4_rankscore")
+rad51cbenrevel <- wilcoxon("RAD51C", "Benign", "REVEL_rankscore")
+rad51cpathrevel <- wilcoxon("RAD51C", "Pathogenic", "REVEL_rankscore")
+rad51cbencadd <- wilcoxon("RAD51C", "Benign", "CADD_raw_rankscore")
+rad51cpathcadd <- wilcoxon("RAD51C", "Pathogenic", "CADD_raw_rankscore")
+rad51cbencaddhg19 <- wilcoxon("RAD51C", "Benign", "CADD_raw_rankscore_hg19")
+rad51cpathcaddhg19 <- wilcoxon("RAD51C", "Pathogenic", "CADD_raw_rankscore_hg19")
+rad51cbengerp <- wilcoxon("RAD51C", "Benign", "GERP_RS_rankscore")
+rad51cpathgerp <- wilcoxon("RAD51C", "Pathogenic", "GERP_RS_rankscore")
+
+rad51c_wilcox <- full_join(rad51cbensift, rad51cpathsift) %>% full_join(rad51cbenhdiv) %>% full_join(rad51cpathhdiv) %>% full_join(rad51cbenhvar) %>% full_join(rad51cpathhvar) %>% full_join(rad51cbenmetal) %>% full_join(rad51cpathmetal) %>% full_join(rad51cbenmetas) %>% full_join(rad51cpathmetas) %>% full_join(rad51cbenmassess) %>% full_join(rad51cpathmassess) %>% full_join(rad51cbenfath) %>% full_join(rad51cpathfath) %>% full_join(rad51cbenvest) %>% full_join(rad51cpathvest) %>% full_join(rad51cbenrevel) %>% full_join(rad51cpathrevel) %>% full_join(rad51cbencadd) %>% full_join(rad51cpathcadd) %>% full_join(rad51cbencaddhg19) %>% full_join(rad51cpathcaddhg19) %>% full_join(rad51cbengerp) %>% full_join(rad51cpathgerp)
+
+#RAD51D
+rad51dbensift <- wilcoxon("RAD51D", "Benign", "SIFT_converted_rankscore")
+rad51dbenhdiv <- wilcoxon("RAD51D", "Benign", "Polyphen2_HDIV_rankscore")
+rad51dbenhvar <- wilcoxon("RAD51D", "Benign", "Polyphen2_HVAR_rankscore")
+rad51dbenmetal <- wilcoxon("RAD51D", "Benign", "MetaLR_rankscore")
+rad51dbenmetas <- wilcoxon("RAD51D", "Benign", "MetaSVM_rankscore")
+rad51dbenmassess <- wilcoxon("RAD51D", "Benign", "MutationAssessor_rankscore")
+rad51dbenfath <- wilcoxon("RAD51D", "Benign", "FATHMM_converted_rankscore")
+rad51dbenvest <- wilcoxon("RAD51D", "Benign", "VEST4_rankscore")
+rad51dbenrevel <- wilcoxon("RAD51D", "Benign", "REVEL_rankscore")
+rad51dbencadd <- wilcoxon("RAD51D", "Benign", "CADD_raw_rankscore")
+rad51dbencaddhg19 <- wilcoxon("RAD51D", "Benign", "CADD_raw_rankscore_hg19")
+rad51dbengerp <- wilcoxon("RAD51D", "Benign", "GERP_RS_rankscore")
+
+rad51d_wilcox <- full_join(rad51dbensift, rad51dbenhdiv) %>%  full_join(rad51dbenhvar) %>%  full_join(rad51dbenmetal) %>% full_join(rad51dbenmetas) %>% full_join(rad51dbenmassess) %>%  full_join(rad51dbenfath) %>% full_join(rad51dbenvest) %>%  full_join(rad51dbenrevel) %>%  full_join(rad51dbencadd) %>%  full_join(rad51dbencaddhg19) %>% full_join(rad51dbengerp) 
+
+#TP53
+tp53bensift <- wilcoxon("TP53", "Benign", "SIFT_converted_rankscore")
+tp53pathsift <- wilcoxon("TP53", "Pathogenic", "SIFT_converted_rankscore")
+tp53benhdiv <- wilcoxon("TP53", "Benign", "Polyphen2_HDIV_rankscore")
+tp53pathhdiv <- wilcoxon("TP53", "Pathogenic", "Polyphen2_HDIV_rankscore")
+tp53benhvar <- wilcoxon("TP53", "Benign", "Polyphen2_HVAR_rankscore")
+tp53pathhvar <- wilcoxon("TP53", "Pathogenic", "Polyphen2_HVAR_rankscore")
+tp53benmetal <- wilcoxon("TP53", "Benign", "MetaLR_rankscore")
+tp53pathmetal <- wilcoxon("TP53", "Pathogenic", "MetaLR_rankscore")
+tp53benmetas <- wilcoxon("TP53", "Benign", "MetaSVM_rankscore")
+tp53pathmetas <- wilcoxon("TP53", "Pathogenic", "MetaSVM_rankscore")
+tp53benmassess <- wilcoxon("TP53", "Benign", "MutationAssessor_rankscore")
+tp53pathmassess <- wilcoxon("TP53", "Pathogenic", "MutationAssessor_rankscore")
+tp53benfath <- wilcoxon("TP53", "Benign", "FATHMM_converted_rankscore")
+tp53pathfath <- wilcoxon("TP53", "Pathogenic", "FATHMM_converted_rankscore")
+tp53benvest <- wilcoxon("TP53", "Benign", "VEST4_rankscore")
+tp53pathvest <- wilcoxon("TP53", "Pathogenic", "VEST4_rankscore")
+tp53benrevel <- wilcoxon("TP53", "Benign", "REVEL_rankscore")
+tp53pathrevel <- wilcoxon("TP53", "Pathogenic", "REVEL_rankscore")
+tp53bencadd <- wilcoxon("TP53", "Benign", "CADD_raw_rankscore")
+tp53pathcadd <- wilcoxon("TP53", "Pathogenic", "CADD_raw_rankscore")
+tp53bencaddhg19 <- wilcoxon("TP53", "Benign", "CADD_raw_rankscore_hg19")
+tp53pathcaddhg19 <- wilcoxon("TP53", "Pathogenic", "CADD_raw_rankscore_hg19")
+tp53bengerp <- wilcoxon("TP53", "Benign", "GERP_RS_rankscore")
+tp53pathgerp <- wilcoxon("TP53", "Pathogenic", "GERP_RS_rankscore")
+
+tp53_wilcox <- full_join(tp53bensift, tp53pathsift) %>% full_join(tp53benhdiv) %>% full_join(tp53pathhdiv) %>% full_join(tp53benhvar) %>% full_join(tp53pathhvar) %>% full_join(tp53benmetal) %>% full_join(tp53pathmetal) %>% full_join(tp53benmetas) %>% full_join(tp53pathmetas) %>% full_join(tp53benmassess) %>% full_join(tp53pathmassess) %>% full_join(tp53benfath) %>% full_join(tp53pathfath) %>% full_join(tp53benvest) %>% full_join(tp53pathvest) %>% full_join(tp53benrevel) %>% full_join(tp53pathrevel) %>% full_join(tp53bencadd) %>% full_join(tp53pathcadd) %>% full_join(tp53bencaddhg19) %>% full_join(tp53pathcaddhg19) %>% full_join(tp53bengerp) %>% full_join(tp53pathgerp)
+
+wilcox <- full_join(atm_wilcox, bard1_wilcox) %>% full_join(brca1_wilcox) %>% full_join(brca2_wilcox) %>% full_join(chek2_wilcox) %>% full_join(palb2_wilcox) %>% full_join(rad51c_wilcox) %>% full_join(rad51d_wilcox) %>% full_join(tp53_wilcox)
+write.csv(wilcox, file=here("output/csv files/wilcox.csv"), row.names = F)
+```
+Normalised
+```{r}
+pred_alpha_all %>%
+  filter(gene=="ATM" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>%   group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() +
+  ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for ATM", x = "Number of prediction algorithms", y= "Percentage")+ scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/ATM.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="BARD1" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>%   
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for BARD1", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/BARD1.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="BRCA1" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for BRCA1", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/BRCA1.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="BRCA2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) +   geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for BRAC2", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/BRCA2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="CHEK2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for CHEK2", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/CHEK2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="PALB2" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for PALB2", x = "Number of prediction algorithms", y= "Percentage")+ scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/PALB2.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="RAD51C" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for RAD51C", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/RAD51C.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="RAD51D" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for RAD51D", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/RAD51D.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(gene=="TP53" , blank_count<4, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Not Annotated", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + geom_line() + geom_point() + ylim(0,100) + labs(title="Normalised graph of percentage of algorithms that predicted pathogenicity for TP53", x = "Number of prediction algorithms", y= "Percentage") + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Not Annotated" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/TP53.png"), width = 8, height = 6, dpi = 300)
+
+pred_alpha_all %>%
+  filter(blank_count<4, ambig_count==0) %>%
+  mutate(Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  mutate(normalised = round((n / sum(n))*100, 2)) %>% 
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  ggplot(aes(x=count, y=normalised, colour=Clin_var_significance)) + facet_wrap(~gene) + geom_line() + geom_point() + ylim(0,100) + labs(title="Percentage of variants that were predicted pathogenicity by algorithms",x = "Number of pathogenic predictions", y= "Percentage")+
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen"))
+ggsave(here("output/normal/all.png"), width = 8, height = 6, dpi = 300)
+```
+RMSD
+```{r}
+rmsd <- function(x) {pred_alpha_all %>%
+  filter(gene == x, blank_count <2, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  select(-c(gene, n)) %>% 
+  pivot_wider(names_from = Clin_var_significance, values_from = normalised) %>%
+  mutate(rms_uncertain = round(sqrt((sum((Unreported - Uncertain)^2))/8),2),
+         rms_pathogenic= round(sqrt((sum((Unreported - Pathogenic)^2))/8),2),
+         rms_benign = round(sqrt((sum((Unreported - Benign)^2))/8),2)) %>% 
+  pivot_longer(cols = c(Benign, Pathogenic, Uncertain, Unreported) , names_to = "Clin_var_sig", values_to = "normalised") %>% 
+  mutate(rmsd = ifelse(Clin_var_sig == "Benign", rms_benign, 
+                       ifelse(Clin_var_sig == "Pathogenic", rms_pathogenic,
+                              ifelse(Clin_var_sig == "Uncertain", rms_uncertain,0)))) %>% 
+  select(Clin_var_sig, rmsd) %>% 
+  group_by(Clin_var_sig) %>% 
+  summarise(rmsd = mean(rmsd)) %>% 
+  rename("ClinVar Clinical Significance" = "Clin_var_sig")}
+rmsd_nopath <- function(x) {pred_alpha_all %>%
+  filter(gene == x, blank_count <2, ambig_count==0) %>%
+  unite(test, gene, Clin_var_significance, sep = " ") %>%
+  group_by(test) %>%
+  count(count) %>%
+  ungroup(test) %>% 
+  add_row(test="BARD1 Pathogenic", count=0, n=0) %>% 
+  group_by(test) %>% 
+  complete(count = full_seq(0:7, 1), fill = list(n = 0)) %>%
+  separate(test, into = c("gene", "Clin_var_significance"), sep = " ") %>%
+  mutate(n= case_when(is.na(n)~ 0, TRUE~n),
+         Clin_var_significance = case_when(Clin_var_significance=="blank" ~ "Unreported", TRUE~ Clin_var_significance)) %>% 
+  group_by(Clin_var_significance) %>%
+  mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
+  select(-c(gene, n)) %>% 
+  pivot_wider(names_from = Clin_var_significance, values_from = normalised) %>%
+  mutate(rms_uncertain = round(sqrt((sum((Unreported - Uncertain)^2))/8),2),
+         rms_pathogenic= round(sqrt((sum((Unreported - Pathogenic)^2))/8),2),
+         rms_benign = round(sqrt((sum((Unreported - Benign)^2))/8),2)) %>% 
+  pivot_longer(cols = c(Benign, Pathogenic, Uncertain, Unreported) , names_to = "Clin_var_sig", values_to = "normalised") %>% 
+  mutate(rmsd = ifelse(Clin_var_sig == "Benign", rms_benign, 
+                       ifelse(Clin_var_sig == "Pathogenic", rms_pathogenic,
+                              ifelse(Clin_var_sig == "Uncertain", rms_uncertain,0)))) %>% 
+  select(Clin_var_sig, rmsd) %>% 
+  group_by(Clin_var_sig) %>% 
+  summarise(rmsd = mean(rmsd)) %>% 
+  rename("ClinVar Clinical Significance" = "Clin_var_sig")}
+
+rmsd("ATM") %>% write.csv(file = here("output/csv files/rmsd/ATM_gnomad.csv"), row.names = F)
+rmsd_nopath("BARD1") %>% write.csv(file = here("output/csv files/rmsd/BARD1_gnomad.csv"), row.names = F)
+rmsd("BRCA1") %>% write.csv(file = here("output/csv files/rmsd/BRCA1_gnomad.csv"), row.names = F)
+rmsd("BRCA2") %>% write.csv(file = here("output/csv files/rmsd/BRCA2_gnomad.csv"), row.names = F)
+rmsd("CHEK2") %>% write.csv(file = here("output/csv files/rmsd/CHEK2_gnomad.csv"), row.names = F)
+rmsd_nopath("PALB2") %>% write.csv(file = here("output/csv files/rmsd/PALB2_gnomad.csv"), row.names = F)
+rmsd("RAD51C") %>% write.csv(file = here("output/csv files/rmsd/RAD51C_gnomad.csv"), row.names = F)
+rmsd_nopath("RAD51D")%>% write.csv(file = here("output/csv files/rmsd/RAD51D_gnomad.csv"), row.names = F)
+rmsd("TP53") %>% write.csv(file = here("output/csv files/rmsd/TP53_gnomad.csv"), row.names = F)
+
+rmsd_ATM <- rmsd("ATM") %>% rename(ATM = "rmsd")
+rmsd_BARD1 <- rmsd_nopath("BARD1") %>% rename(BARD1 = "rmsd")
+rmsd_BRCA1 <- rmsd("BRCA1") %>% rename(BRCA1 = "rmsd")
+rmsd_BRCA2 <- rmsd("BRCA2") %>% rename(BRCA2 = "rmsd")
+rmsd_CHEK2 <- rmsd("CHEK2") %>% rename(CHEK2 = "rmsd")
+rmsd_PALB2 <- rmsd_nopath("PALB2") %>% rename(PALB2 = "rmsd")
+rmsd_RAD51C <- rmsd("RAD51C") %>% rename(RAD51C = "rmsd")
+rmsd_RAD51D <- rmsd_nopath("RAD51D") %>% rename(RAD51D = "rmsd")
+rmsd_TP53 <- rmsd("TP53") %>% rename(TP53 = "rmsd")
+
+inner_join(rmsd_ATM, rmsd_BARD1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_BRCA1, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_BRCA2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_CHEK2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_PALB2, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_RAD51C, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_RAD51D, by= "ClinVar Clinical Significance") %>% 
+  inner_join(rmsd_TP53, by= "ClinVar Clinical Significance") %>% 
+  arrange(ATM) %>% write.csv(file = here("output/csv files/RMSD.csv"))
+```

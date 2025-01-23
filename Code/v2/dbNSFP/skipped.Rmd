@@ -1,0 +1,467 @@
+gnomad - Variants that were skipped on the first round by dbNSFP  and joined into dbNSFP for dbNSFP graphs
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+
+Pathogenic <- c("Pathogenic", "Pathogenic/Likely pathogenic", "Likely pathogenic")
+Benign <- c("Benign", "Benign/Likely benign", "Likely benign")
+Uncertain <- c("Uncertain significance", "Conflicting interpretations of pathogenicity", "Conflicting interpretations of pathogenicity; risk factor")
+Splice <- c("splice_donor_variant", "splice_acceptor_variant")
+Inframe <- c("inframe_deletion", "inframe_insertion")
+Stop <- c("stop_gained", "stop_lost")
+
+dbnsfp <- function() {gnomad %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% filter(vep_annotation=="missense_variant")}
+```
+
+Filtering out the variants skipped by dbNSFP
+```{r}
+atm_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> atm_filter
+atm %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate, sep = " ") %>% 
+  filter(!dbnsfp%in%atm_filter) -> atm_ben_filter
+
+atm_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> atm_filter
+atm %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%atm_filter) -> atm_path_filter
+
+atm_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> atm_filter
+atm %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%atm_filter) -> atm_blank_filter
+
+atm_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> atm_filter
+atm %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%atm_filter) -> atm_uncertain_filter
+
+bard1_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> bard1_filter
+bard1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%bard1_filter) -> bard1_ben_filter
+
+bard1_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> bard1_filter
+bard1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%bard1_filter) -> bard1_blank_filter
+
+bard1_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> bard1_filter
+bard1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%bard1_filter) -> bard1_uncertain_filter
+
+brca1_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca1_filter
+brca1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca1_filter) -> brca1_ben_filter
+
+brca1_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca1_filter
+brca1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca1_filter) -> brca1_path_filter
+
+brca1_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca1_filter
+brca1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca1_filter) -> brca1_blank_filter
+
+brca1_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca1_filter
+brca1 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca1_filter) -> brca1_uncertain_filter
+
+brca2_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca2_filter
+brca2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca2_filter) -> brca2_ben_filter
+
+brca2_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca2_filter
+brca2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca2_filter) -> brca2_path_filter
+
+brca2_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca2_filter
+brca2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca2_filter) -> brca2_blank_filter
+
+brca2_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> brca2_filter
+brca2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%brca2_filter) -> brca2_uncertain_filter
+
+chek2_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> chek2_filter
+chek2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%chek2_filter) -> chek2_ben_filter
+
+chek2_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> chek2_filter
+chek2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%chek2_filter) -> chek2_path_filter
+
+chek2_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> chek2_filter
+chek2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%chek2_filter) -> chek2_blank_filter
+
+chek2_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> chek2_filter
+chek2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%chek2_filter) -> chek2_uncertain_filter
+
+palb2_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> palb2_filter
+palb2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%palb2_filter) -> palb2_ben_filter
+
+palb2_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> palb2_filter
+palb2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%palb2_filter) -> palb2_blank_filter
+
+palb2_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> palb2_filter
+palb2 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%palb2_filter) -> palb2_uncertain_filter
+
+rad51c_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51c_filter
+rad51c %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51c_filter) -> rad51c_ben_filter
+
+rad51c_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51c_filter
+rad51c %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51c_filter) -> rad51c_path_filter
+
+rad51c_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51c_filter
+rad51c %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51c_filter) -> rad51c_blank_filter
+
+rad51c_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51c_filter
+rad51c %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51c_filter) -> rad51c_uncertain_filter
+
+rad51d_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51d_filter
+rad51d %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51d_filter) -> rad51d_ben_filter
+
+rad51d_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51d_filter
+rad51d %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51d_filter) -> rad51d_blank_filter
+
+rad51d_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> rad51d_filter
+rad51d %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%rad51d_filter) -> rad51d_uncertain_filter
+
+tp53_ben %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> tp53_filter
+tp53 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Benign") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%tp53_filter) -> tp53_ben_filter
+
+tp53_path %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> tp53_filter
+tp53 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Pathogenic") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%tp53_filter) -> tp53_path_filter
+
+tp53_blank %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> tp53_filter
+tp53 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(is.na(clin_var_clinical_significance)) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%tp53_filter) -> tp53_blank_filter
+
+tp53_uncertain %>% unite(filter, hg19_pos, ref, alt, sep=" ") %>% pull(filter) -> tp53_filter
+tp53 %>%
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>%
+  filter(clin_var_clinical_significance=="Uncertain") %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(dbnsfp, position, reference, alternate ,sep = " ") %>% 
+  filter(!dbnsfp%in%tp53_filter) -> tp53_uncertain_filter
+```
+Inputting skipped variants for dbNSFP
+```{r}
+skip <- full_join(atm_ben_filter, atm_path_filter) %>% full_join(atm_blank_filter) %>% full_join(atm_uncertain_filter) %>% full_join(bard1_ben_filter) %>% full_join(bard1_blank_filter) %>% full_join(bard1_uncertain_filter) %>% full_join(brca1_ben_filter) %>% full_join(brca1_path_filter) %>% full_join(brca1_blank_filter) %>% full_join(brca1_uncertain_filter) %>% full_join(brca2_ben_filter) %>% full_join(brca2_path_filter) %>% full_join(brca2_blank_filter) %>% full_join(brca2_uncertain_filter) %>% full_join(chek2_ben_filter) %>% full_join(chek2_path_filter) %>% full_join(chek2_uncertain_filter) %>% full_join(chek2_blank_filter) %>% full_join(palb2_ben_filter) %>% full_join(palb2_blank_filter) %>% full_join(palb2_uncertain_filter) %>% full_join(rad51c_ben_filter) %>% full_join(rad51c_blank_filter) %>% full_join(rad51c_path_filter) %>% full_join(rad51c_uncertain_filter) %>% full_join(rad51d_ben_filter) %>% full_join(rad51d_uncertain_filter) %>% full_join(rad51d_blank_filter) %>% full_join(tp53_ben_filter) %>% full_join(tp53_path_filter) %>% full_join(tp53_uncertain_filter) %>% full_join(tp53_blank_filter) %>% rename(gene=chromosome) %>% 
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene) %>% 
+  unite(variant_id, chromosome, dbnsfp, sep = " ")
+
+skip$variant_id -> skipped_variants
+
+write.table(skipped_variants, file=here("output/dbnsfp/skipped_dbnsfp.txt"), sep = "\t", row.names = F, col.names = F)
+```
+Joining all the skipped variants
+```{r}
+skip1 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip1.txt"), header = T)
+skip2 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip2.txt"), header = T)
+skip3 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip3.txt"), header = T)
+skip4 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip4.txt"), header = T)
+skip5 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip5.txt"), header = T)
+skip6 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip6.txt"), header = T)
+skip7 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip7.txt"), header = T)
+
+skip8 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip8.txt"), header = T)
+skip9 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip9.txt"), header = T)
+skip10 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip10.txt"), header = T)
+
+skip11 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip11.txt"), header = T)
+skip12 <- read.table(file=here("output/dbNSFP/Skipped/Worked/skip12.txt"), header = T)
+
+brca2_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/BRCA2.txt"), header = T)
+chek2_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/CHEK2.txt"), header = T)
+palb2_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/PALB2.txt"), header = T)
+rad51c_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/RAD51C.txt"), header = T)
+rad51d_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/RAD51D.txt"), header = T)
+tp53_skipped <- read.table(file=here("output/dbNSFP/Skipped/Worked/TP53.txt"), header = T)
+
+skip1 <- skip1 %>% mutate_all(as.character)
+skip2 <- skip2 %>% mutate_all(as.character)
+skip3 <- skip3 %>% mutate_all(as.character)
+skip4 <- skip4 %>% mutate_all(as.character)
+skip5 <- skip5 %>% mutate_all(as.character)
+skip6 <- skip6 %>% mutate_all(as.character)
+skip7 <- skip7 %>% mutate_all(as.character)
+skip8 <- skip8 %>% mutate_all(as.character)
+skip9 <- skip9 %>% mutate_all(as.character)
+skip10 <- skip10 %>% mutate_all(as.character)
+skip11 <- skip11 %>% mutate_all(as.character)
+skip12 <- skip12 %>% mutate_all(as.character)
+brca2_skipped <- brca2_skipped %>% mutate_all(as.character)
+chek2_skipped <- chek2_skipped %>% mutate_all(as.character)
+palb2_skipped <- palb2_skipped %>% mutate_all(as.character)
+rad51c_skipped <- rad51c_skipped %>% mutate_all(as.character)
+rad51d_skipped <- rad51d_skipped %>% mutate_all(as.character)
+tp53_skipped <- tp53_skipped %>% mutate_all(as.character)
+
+atm_skipped <- full_join(skip1, skip2) %>% full_join(skip3) %>% full_join(skip4) %>% full_join(skip5) %>% full_join(skip6) %>% full_join(skip7)
+bard1_skipped <- full_join(skip8, skip9) %>% full_join(skip10)
+brca1_skipped <- full_join(skip11, skip12)
+
+atm_skipped <- atm_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+bard1_skipped <- bard1_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+brca1_skipped <- brca1_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+brca2_skipped <- brca2_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+chek2_skipped <- chek2_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+palb2_skipped <- palb2_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+rad51c_skipped <- rad51c_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+rad51d_skipped <- rad51d_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+tp53_skipped <- tp53_skipped %>% unite(variant_id, chr, hg19_pos, ref,alt, sep=" ")
+
+atm_skipped <- atm_skipped[!duplicated(atm_skipped$variant_id),]
+bard1_skipped <- bard1_skipped[!duplicated(bard1_skipped$variant_id),]
+brca1_skipped <- brca1_skipped[!duplicated(brca1_skipped$variant_id),]
+brca2_skipped <- brca2_skipped[!duplicated(brca2_skipped$variant_id),]
+chek2_skipped <- chek2_skipped[!duplicated(chek2_skipped$variant_id),]
+palb2_skipped <- palb2_skipped[!duplicated(palb2_skipped$variant_id),]
+rad51c_skipped <- rad51c_skipped[!duplicated(rad51c_skipped$variant_id),]
+rad51d_skipped <- rad51d_skipped[!duplicated(rad51d_skipped$variant_id),]
+tp53_skipped <- tp53_skipped[!duplicated(tp53_skipped$variant_id),]
+
+variant_skipped <- full_join(atm_skipped, bard1_skipped) %>% full_join(brca1_skipped) %>%  full_join(brca2_skipped) %>% full_join(chek2_skipped) %>% full_join(palb2_skipped) %>% full_join(rad51c_skipped) %>% full_join(rad51d_skipped) %>% full_join(tp53_skipped) %>% mutate(genename= case_when(genename=="RAD51L3-RFFL" ~ "RAD51D", TRUE~genename))
+```
+
+```{r}
+skipped_pred <- variant_skipped %>%  mutate(MetaSVM_pred=ifelse(MetaSVM_rankscore>"0.82257","D",
+                             ifelse(MetaSVM_rankscore==".", "B", "T")),
+         MetaLR_pred=ifelse(MetaLR_rankscore>"0.81101","D",
+                            ifelse(MetaLR_rankscore==".", "B", "T")),
+         Polyphen2_HDIV_pred=ifelse(Polyphen2_HDIV_rankscore >"0.38028", "D", 
+                                    ifelse(Polyphen2_HDIV_rankscore==".", "B", "T")),
+         Polyphen2_HVAR_pred=ifelse(Polyphen2_HVAR_rankscore > "0.48762","D",
+                                    ifelse(Polyphen2_HVAR_rankscore==".", "B", "T")),
+         SIFT_pred=ifelse(SIFT_converted_rankscore>"0.39575","D",
+                          ifelse(SIFT_converted_rankscore==".", "B", "T")),
+         MutationAssessor_pred=ifelse(MutationAssessor_rankscore>"0.9307", "H",
+                               ifelse(MutationAssessor_rankscore>"0.52043", "M",
+                               ifelse(MutationAssessor_rankscore>"0.19675","L",
+                                      ifelse(MutationAssessor_rankscore==".", "B", "N")))),
+         FATHMM_pred=ifelse(FATHMM_converted_rankscore>="0.81332", "D", 
+                            ifelse(FATHMM_converted_rankscore==".", "B", "T"))) %>%
+  select(genename, variant_id, MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred, FATHMM_pred, SIFT_pred, MutationAssessor_pred) %>% 
+  mutate(count = rowSums(select(., MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred, FATHMM_pred, SIFT_pred, MutationAssessor_pred) == "D" |
+                             select(., MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred, FATHMM_pred, SIFT_pred, MutationAssessor_pred) == "H" |
+                             select(.,MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred, FATHMM_pred, SIFT_pred, MutationAssessor_pred) == "M")) %>% 
+    mutate(blank_count = rowSums(select(., MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred,  FATHMM_pred, SIFT_pred, MutationAssessor_pred) == "B"))
+
+write.csv(skipped_pred, file = here("output/csv files/skipped predictions.csv"), row.names =F)
+
+skipped_rankscores <- 
+  variant_skipped %>%
+  select(genename, variant_id, SIFT_converted_rankscore, Polyphen2_HDIV_rankscore, Polyphen2_HVAR_rankscore,MetaLR_rankscore, MetaSVM_rankscore, MutationAssessor_rankscore, FATHMM_converted_rankscore, VEST4_rankscore, REVEL_rankscore, CADD_raw_rankscore, CADD_raw_rankscore_hg19, GERP_RS_rankscore)
+  
+write.csv(skipped_rankscores, file = here("output/csv files/skipped rankscores.csv"), row.names =F)
+```
+
+```{r}
+gnomad_unique %>% 
+  rename(gene=chromosome) %>% 
+  mutate(chromosome = case_when(gene=="atm" ~ 11,
+                                gene=="bard1" ~ 2,
+                                gene=="brca1" ~ 17,
+                                gene=="brca2" ~ 13,
+                                gene=="chek2" ~ 22,
+                                gene=="palb2" ~ 16,
+                                gene=="rad51c" ~ 17,
+                                gene=="rad51d" ~ 17,
+                                gene=="tp53" ~ 17),.after = gene) %>%
+  unite(variant_id, chromosome, position, reference, alternate, sep = " ") %>% 
+  pull(variant_id) -> unique_variants
+
+unique_skipped_pred <- skipped_pred %>% filter(variant_id %in% unique_variants)
+
+unique_skipped_rankscore <- skipped_rankscores %>% filter(variant_id %in% unique_variants)
+```
+
+```{r}
+unique_skipped_pred %>% pull(variant_id) -> variance
+population_specific %>% filter(variant_id%in%variance) %>% select(variant_id, conditions) -> skipped_test 
+
+unique_skipped_pred%>% rename(gene=genename) %>% inner_join(skipped_test, by="variant_id") %>%  separate(conditions, into = c("Country", "Clin_var_significance"), sep = " ") %>% 
+  mutate(Population = case_when(Country=="afr" ~ "African",
+                                Country=="euro" ~ "European",
+                                Country=="lat" ~ "Latino",
+                                Country=="ea" ~ "East_asian",
+                                Country=="sa" ~ "South_asian"),.after=Country) %>%
+  select(-Country) %>% 
+  mutate(Percentage= round((count/7)*100,2)) -> unique_skip_pred_percent
+
+write.csv(unique_skip_pred_percent, file=here("output/csv files/Populations specific skipped prediction.csv"), row.names = F)
+
+unique_skipped_rankscore %>% 
+  rename(gene=genename) %>% inner_join(skipped_test, by="variant_id") %>% 
+  separate(conditions, into = c("Country", "Clin_var_significance"), sep = " ") %>% 
+  mutate(Population = case_when(Country=="afr" ~ "African",
+                                Country=="euro" ~ "European",
+                                Country=="lat" ~ "Latino",
+                                Country=="ea" ~ "East_asian",
+                                Country=="sa" ~ "South_asian"),.after=Country) %>% select(-Country) -> unique_skip_rankscore
+
+write.csv(unique_skip_rankscore, file=here("output/csv files/Populations specific skipped rankscores.csv"), row.names = F)
+```
+
+```{r}
+unique_skip_pred_percent <- unique_skip_pred_percent %>% mutate(Prediction=ifelse(count>=5,"Pathogenic", ifelse(blank_count==6, "Blank","Benign")),.after=Clin_var_significance) %>% select(gene, variant_id,Population, Clin_var_significance, Prediction, MetaSVM_pred, MetaLR_pred, Polyphen2_HDIV_pred, FATHMM_pred, SIFT_pred, MutationAssessor_pred, count, Percentage, blank_count)
+
+write.csv(unique_skip_pred_percent, file=here("output/csv files/predicted_skip_table.csv"), row.names =  F)
+```
+Joining both dbnsfp variants and the variants skipped in beginning 
+```{r}
+prediction_unique <- full_join(unique_pred_percent, unique_skip_pred_percent)
+rankscore_unique <- full_join(unique_skip_rankscore, unique_rankscore)
+```
+
