@@ -1,0 +1,561 @@
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+library('corrr')
+library(ggcorrplot)
+library("FactoMineR")
+library(factoextra)
+```
+
+ATM
+```{r}
+pca %>% 
+  filter(gene=="atm") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> atm_assay
+
+transposed_atm_assay <- as.data.frame(t(atm_assay))
+
+col_to_rem<- colSums(is.na(atm_assay))
+atm_pca <- rbind(atm_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_atm_assay))
+transposed_atm_pca <- rbind(transposed_atm_assay, col_trem)
+rownames_to_column(transposed_atm_pca, var = "rankscore")
+transposed_atm_pca <- transposed_atm_pca %>% select(-which(.[30, ] == 27))
+transposed_atm_pca <- transposed_atm_pca[-30,]
+transposed_atm_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+atm_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(atm_pca) <- atm_pca[1, ]
+atm_pca <- atm_pca[-1, ]
+atm_pca[] <- lapply(atm_pca, as.numeric)
+atm_pca <- atm_pca %>% drop_na()
+
+atm_pca <- cor(scale(atm_pca)) %>% princomp()
+fviz_eig(atm_pca, addlabels = T)
+
+pca_data <- as.data.frame(atm_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_atm <- pca_scores[-1, ]
+pca_atm[,-1] <- lapply(pca_atm[,-1], as.numeric)
+
+pca_atm %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/ATM.png"), width = 8, height = 6, dpi = 300)
+```
+
+BARD1
+```{r}
+pca %>% 
+  filter(gene=="bard1") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> bard1_assay
+
+transposed_bard1_assay <- as.data.frame(t(bard1_assay))
+
+col_to_rem<- colSums(is.na(bard1_assay))
+bard1_pca <- rbind(bard1_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_bard1_assay))
+transposed_bard1_pca <- rbind(transposed_bard1_assay, col_trem)
+rownames_to_column(transposed_bard1_pca, var = "rankscore")
+transposed_bard1_pca <- transposed_bard1_pca %>% select(-which(.[30, ] == 27))
+transposed_bard1_pca <- transposed_bard1_pca[-30,]
+transposed_bard1_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+bard1_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(bard1_pca) <- bard1_pca[1, ]
+bard1_pca <- bard1_pca[-1, ]
+bard1_pca[] <- lapply(bard1_pca, as.numeric)
+bard1_pca <- bard1_pca %>% drop_na()
+
+bard1_pca <- cor(scale(bard1_pca)) %>% princomp()
+fviz_eig(bard1_pca, addlabels = T)
+
+pca_data <- as.data.frame(bard1_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_bard1 <- pca_scores[-1, ]
+pca_bard1[,-1] <- lapply(pca_bard1[,-1], as.numeric)
+
+pca_bard1 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/BARD1.png"), width = 8, height = 6, dpi = 300)
+```
+
+BRCA1
+```{r}
+pca %>% 
+  separate(hgvsg, c("chromosome","variant"), sep = ":") %>% 
+  mutate(gene = case_when(chromosome == "chr13" ~ "BRCA2", chromosome == "chr17" ~ "BRCA1"), .after="chromosome") %>% 
+  unite(hgvsg, chromosome, variant, sep = ":") %>% 
+  filter(gene=="BRCA1") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> brca1_assay
+
+transposed_brca1_assay <- as.data.frame(t(brca1_assay))
+
+col_to_rem<- colSums(is.na(brca1_assay))
+brca1_pca <- rbind(brca1_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_brca1_assay))
+transposed_brca1_pca <- rbind(transposed_brca1_assay, col_trem)
+rownames_to_column(transposed_brca1_pca, var = "rankscore")
+transposed_brca1_pca <- transposed_brca1_pca %>% select(-which(.[30, ] == 27))
+transposed_brca1_pca <- transposed_brca1_pca[-30,]
+transposed_brca1_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+brca1_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(brca1_pca) <- brca1_pca[1, ]
+brca1_pca <- brca1_pca[-1, ]
+brca1_pca[] <- lapply(brca1_pca, as.numeric)
+brca1_pca <- brca1_pca %>% drop_na()
+
+brca1_pca <- cor(scale(brca1_pca)) %>% princomp()
+fviz_eig(brca1_pca, addlabels = T)
+
+pca_data <- as.data.frame(brca1_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_brca1 <- pca_scores[-1, ]
+pca_brca1[,-1] <- lapply(pca_brca1[,-1], as.numeric)
+
+pca_brca1 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/BRCA1.png"), width = 8, height = 6, dpi = 300)
+```
+
+BRCA2
+```{r}
+pca %>% 
+  separate(hgvsg, c("chromosome","variant"), sep = ":") %>% 
+  mutate(gene = case_when(chromosome == "chr13" ~ "BRCA2", chromosome == "chr17" ~ "BRCA1"), .after="chromosome") %>% 
+  unite(hgvsg, chromosome, variant, sep = ":") %>% 
+  filter(gene=="BRCA2") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> brca2_assay
+
+transposed_brca2_assay <- as.data.frame(t(brca2_assay))
+
+col_to_rem<- colSums(is.na(brca2_assay))
+brca2_pca <- rbind(brca2_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_brca2_assay))
+transposed_brca2_pca <- rbind(transposed_brca2_assay, col_trem)
+rownames_to_column(transposed_brca2_pca, var = "rankscore")
+transposed_brca2_pca <- transposed_brca2_pca %>% select(-which(.[30, ] == 27))
+transposed_brca2_pca <- transposed_brca2_pca[-30,]
+transposed_brca2_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+brca2_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(brca2_pca) <- brca2_pca[1, ]
+brca2_pca <- brca2_pca[-1, ]
+brca2_pca[] <- lapply(brca2_pca, as.numeric)
+brca2_pca <- brca2_pca %>% drop_na()
+
+brca2_pca <- cor(scale(brca2_pca)) %>% princomp()
+fviz_eig(brca2_pca, addlabels = T)
+
+pca_data <- as.data.frame(brca2_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_brca2 <- pca_scores[-1, ]
+pca_brca2[,-1] <- lapply(pca_brca2[,-1], as.numeric)
+
+pca_brca2 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/BRCA2.png"), width = 8, height = 6, dpi = 300)
+```
+
+CHEK2
+```{r}
+pca %>% 
+  filter(gene=="chek2") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> chek2_assay
+
+transposed_chek2_assay <- as.data.frame(t(chek2_assay))
+
+col_to_rem<- colSums(is.na(chek2_assay))
+chek2_pca <- rbind(chek2_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_chek2_assay))
+transposed_chek2_pca <- rbind(transposed_chek2_assay, col_trem)
+rownames_to_column(transposed_chek2_pca, var = "rankscore")
+transposed_chek2_pca <- transposed_chek2_pca %>% select(-which(.[30, ] == 27))
+transposed_chek2_pca <- transposed_chek2_pca[-30,]
+transposed_chek2_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+chek2_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(chek2_pca) <- chek2_pca[1, ]
+chek2_pca <- chek2_pca[-1, ]
+chek2_pca[] <- lapply(chek2_pca, as.numeric)
+chek2_pca <- chek2_pca %>% drop_na()
+
+chek2_pca <- cor(scale(chek2_pca)) %>% princomp()
+fviz_eig(chek2_pca, addlabels = T)
+
+pca_data <- as.data.frame(chek2_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_chek2 <- pca_scores[-1, ]
+pca_chek2[,-1] <- lapply(pca_chek2[,-1], as.numeric)
+
+pca_chek2 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/CHEK2.png"), width = 8, height = 6, dpi = 300)
+```
+
+PALB2
+```{r}
+pca %>% 
+  filter(gene=="palb2") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> palb2_assay
+
+transposed_palb2_assay <- as.data.frame(t(palb2_assay))
+
+col_to_rem<- colSums(is.na(palb2_assay))
+palb2_pca <- rbind(palb2_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_palb2_assay))
+transposed_palb2_pca <- rbind(transposed_palb2_assay, col_trem)
+rownames_to_column(transposed_palb2_pca, var = "rankscore")
+transposed_palb2_pca <- transposed_palb2_pca %>% select(-which(.[30, ] == 27))
+transposed_palb2_pca <- transposed_palb2_pca[-30,]
+transposed_palb2_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+palb2_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(palb2_pca) <- palb2_pca[1, ]
+palb2_pca <- palb2_pca[-1, ]
+palb2_pca[] <- lapply(palb2_pca, as.numeric)
+palb2_pca <- palb2_pca %>% drop_na()
+
+palb2_pca <- cor(scale(palb2_pca)) %>% princomp()
+fviz_eig(palb2_pca, addlabels = T)
+
+pca_data <- as.data.frame(palb2_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_palb2 <- pca_scores[-1, ]
+pca_palb2[,-1] <- lapply(pca_palb2[,-1], as.numeric)
+
+pca_palb2 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/PALB2.png"), width = 8, height = 6, dpi = 300)
+```
+
+RAD51C
+```{r}
+pca %>% 
+  filter(gene=="rad51c") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> rad51c_assay
+
+transposed_rad51c_assay <- as.data.frame(t(rad51c_assay))
+
+col_to_rem<- colSums(is.na(rad51c_assay))
+rad51c_pca <- rbind(rad51c_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_rad51c_assay))
+transposed_rad51c_pca <- rbind(transposed_rad51c_assay, col_trem)
+rownames_to_column(transposed_rad51c_pca, var = "rankscore")
+transposed_rad51c_pca <- transposed_rad51c_pca %>% select(-which(.[30, ] == 27))
+transposed_rad51c_pca <- transposed_rad51c_pca[-30,]
+transposed_rad51c_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+rad51c_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(rad51c_pca) <- rad51c_pca[1, ]
+rad51c_pca <- rad51c_pca[-1, ]
+rad51c_pca[] <- lapply(rad51c_pca, as.numeric)
+rad51c_pca <- rad51c_pca %>% drop_na()
+
+rad51c_pca <- cor(scale(rad51c_pca)) %>% princomp()
+fviz_eig(rad51c_pca, addlabels = T)
+
+pca_data <- as.data.frame(rad51c_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_rad51c <- pca_scores[-1, ]
+pca_rad51c[,-1] <- lapply(pca_rad51c[,-1], as.numeric)
+
+pca_rad51c %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/RAD51C.png"), width = 8, height = 6, dpi = 300)
+```
+
+RAD51D
+```{r}
+pca %>% 
+  filter(gene=="rad51d") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> rad51d_assay
+
+transposed_rad51d_assay <- as.data.frame(t(rad51d_assay))
+
+col_to_rem<- colSums(is.na(rad51d_assay))
+rad51d_pca <- rbind(rad51d_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_rad51d_assay))
+transposed_rad51d_pca <- rbind(transposed_rad51d_assay, col_trem)
+rownames_to_column(transposed_rad51d_pca, var = "rankscore")
+transposed_rad51d_pca <- transposed_rad51d_pca %>% select(-which(.[30, ] == 27))
+transposed_rad51d_pca <- transposed_rad51d_pca[-30,]
+transposed_rad51d_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+rad51d_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(rad51d_pca) <- rad51d_pca[1, ]
+rad51d_pca <- rad51d_pca[-1, ]
+rad51d_pca[] <- lapply(rad51d_pca, as.numeric)
+rad51d_pca <- rad51d_pca %>% drop_na()
+
+rad51d_pca <- cor(scale(rad51d_pca)) %>% princomp()
+fviz_eig(rad51d_pca, addlabels = T)
+
+pca_data <- as.data.frame(rad51d_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_rad51d <- pca_scores[-1, ]
+pca_rad51d[,-1] <- lapply(pca_rad51d[,-1], as.numeric)
+
+pca_rad51d %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/RAD51D.png"), width = 8, height = 6, dpi = 300)
+```
+
+TP53
+```{r}
+pca %>% 
+  filter(gene=="tp53") %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> tp53_assay
+
+transposed_tp53_assay <- as.data.frame(t(tp53_assay))
+
+col_to_rem<- colSums(is.na(tp53_assay))
+tp53_pca <- rbind(tp53_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_tp53_assay))
+transposed_tp53_pca <- rbind(transposed_tp53_assay, col_trem)
+rownames_to_column(transposed_tp53_pca, var = "rankscore")
+transposed_tp53_pca <- transposed_tp53_pca %>% select(-which(.[30, ] == 27))
+transposed_tp53_pca <- transposed_tp53_pca[-30,]
+transposed_tp53_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+tp53_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(tp53_pca) <- tp53_pca[1, ]
+tp53_pca <- tp53_pca[-1, ]
+tp53_pca[] <- lapply(tp53_pca, as.numeric)
+tp53_pca <- tp53_pca %>% drop_na()
+
+tp53_pca <- cor(scale(tp53_pca)) %>% princomp()
+fviz_eig(tp53_pca, addlabels = T)
+
+pca_data <- as.data.frame(tp53_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_tp53 <- pca_scores[-1, ]
+pca_tp53[,-1] <- lapply(pca_tp53[,-1], as.numeric)
+
+pca_tp53 %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/TP53.png"), width = 8, height = 6, dpi = 300)
+```
+
+All genes
+```{r}
+pca %>% 
+  select(c(hgvsg, clin_var_clinical_significance, Population, dbnsfp_bayesdel_add_af_rankscore, dbnsfp_bayesdel_no_af_rankscore, dbnsfp_bstatistic_converted_rankscore, dbnsfp_clinpred_rankscore, dbnsfp_dann_rankscore,  dbnsfp_eigen_raw_coding_rankscore, dbnsfp_eigen_pc_raw_coding_rankscore, dbnsfp_fathmm_converted_rankscore, dbnsfp_genocanyon_rankscore, dbnsfp_gerp_rs_rankscore, dbnsfp_gm12878_fitcons_rankscore, dbnsfp_h1_hesc_fitcons_rankscore, dbnsfp_huvec_fitcons_rankscore, dbnsfp_integrated_fitcons_rankscore, dbnsfp_lrt_converted_rankscore, dbnsfp_metalr_rankscore, dbnsfp_metarnn_rankscore, dbnsfp_metasvm_rankscore, dbnsfp_mpc_rankscore,  dbnsfp_mutationtaster_converted_rankscore, dbnsfp_phastcons_100way_vertebrate_rankscore, dbnsfp_phylop_100way_vertebrate_rankscore, dbnsfp_primateai_rankscore, dbnsfp_provean_converted_rankscore, dbnsfp_revel_rankscore, dbnsfp_sift_converted_rankscore, dbnsfp_siphy_29way_logodds_rankscore)) %>% 
+   mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, hgvsg, clin_var_clinical_significance, sep = ", ") -> all_assay
+
+transposed_all_assay <- as.data.frame(t(all_assay))
+
+col_to_rem<- colSums(is.na(all_assay))
+all_pca <- rbind(all_assay, col_to_rem)
+
+col_trem<- colSums(is.na(transposed_all_assay))
+transposed_all_pca <- rbind(transposed_all_assay, col_trem)
+rownames_to_column(transposed_all_pca, var = "rankscore")
+transposed_all_pca <- transposed_all_pca %>% select(-which(.[30, ] == 27))
+transposed_all_pca <- transposed_all_pca[-30,]
+transposed_all_pca %>% write.table(file = here("data/PCA_assay.txt"), row.names = F, col.names = F)
+
+all_pca <- read.table(here("data/PCA_assay.txt"))
+colnames(all_pca) <- all_pca[1, ]
+all_pca <- all_pca[-1, ]
+all_pca[] <- lapply(all_pca, as.numeric)
+all_pca <- all_pca %>% drop_na()
+
+all_pca <- cor(scale(all_pca)) %>% princomp()
+fviz_eig(all_pca, addlabels = T)
+
+pca_data <- as.data.frame(all_pca$loadings[,1:5])
+pca_data %>% write.table(here("data/PCA.txt"), col.names = F)
+pca_scores <- read.table(here("data/PCA.txt"))
+pca_all <- pca_scores[-1, ]
+pca_all[,-1] <- lapply(pca_all[,-1], as.numeric)
+
+pca_all %>%
+  separate(V1, c("variant", "clin_sig"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig)) %>%
+  ggplot(aes(x = V2, y = V3, colour=clin_sig)) +
+  geom_point() + scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + labs(x = "Comp1", y = "Comp2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank())
+ggsave(here("output/PCA/all.png"), width = 8, height = 6, dpi = 300)
+```
+

@@ -1,0 +1,72 @@
+gnomAD - Line graph of percentage of annotation of population unique variants.
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+```
+Joining all data of genes from 2023 into 1 file
+```{r}
+full_join(atm, brca1) %>% full_join(bard1) %>% full_join(brca2) %>% full_join(chek2) %>% full_join(palb2) %>% full_join(rad51c) %>% full_join(rad51d) %>% full_join(tp53) -> gnomad
+
+Pathogenic <- c("Pathogenic", "Pathogenic/Likely pathogenic", "Likely pathogenic")
+Benign <- c("Benign", "Benign/Likely benign", "Likely benign")
+Uncertain <- c("Uncertain significance", "Conflicting interpretations of pathogenicity", "Conflicting interpretations of pathogenicity; risk factor")
+Splice <- c("splice_donor_variant", "splice_acceptor_variant")
+Inframe <- c("inframe_deletion", "inframe_insertion")
+Stop <- c("stop_gained", "stop_lost")
+```
+
+Creating separate data on basis of population
+```{r}
+gnomad %>% filter(allele_count_african_african_american!=0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>%
+filter(!is.na(clin_var_clinical_significance)) %>% count(gene) %>% rename(AFR=n) ->gnomad_afr
+
+gnomad %>% filter(allele_count_african_african_american!=0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% count(gene) %>% rename(AFR_total=n) ->gnomad_afr_total
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american!=0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+filter(!is.na(clin_var_clinical_significance)) %>% count(gene) %>% rename(AMR=n)-> gnomad_amr
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american!=0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+count(gene) %>% rename(AMR_total=n)-> gnomad_amr_total
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish!=0 , allele_count_south_asian==0) %>% 
+filter(!is.na(clin_var_clinical_significance)) %>% count(gene)%>% rename(NFE=n)-> gnomad_nfe
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish!=0 , allele_count_south_asian==0) %>% 
+count(gene)%>% rename(NFE_total=n)-> gnomad_nfe_total
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian!=0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+filter(!is.na(clin_var_clinical_significance)) %>% count(gene)%>% rename(EAS=n)-> gnomad_eas
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian!=0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+count(gene)%>% rename(EAS_total=n)-> gnomad_eas_total
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian!=0) %>% 
+filter(!is.na(clin_var_clinical_significance)) %>% count(gene)%>% rename(SAS=n) -> gnomad_sas
+
+gnomad %>% filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian!=0) %>% 
+count(gene)%>% rename(SAS_total=n) -> gnomad_sas_total
+```
+Number of annotated population unique variants
+```{r}
+full_join(gnomad_afr,gnomad_amr) %>% full_join(gnomad_nfe) %>% full_join(gnomad_eas) %>% full_join(gnomad_sas) %>% pivot_longer(cols=c(AFR, AMR, NFE, EAS, SAS), names_to = "Population", values_to = "Values") %>% ggplot(aes(x=Population,y=Values, shape=Population)) + geom_point() + facet_wrap(~gene) + theme(axis.text.x = element_text(angle = 35, hjust=1)) + geom_text(aes(label=Values), vjust=-1) + ylim(0, 1000) + scale_x_discrete(limits = c("NFE", "AFR", "AMR", "EAS", "SAS")) + labs(y="Number of population unique variants annotated")
+```
+Percentage of annotation of population unique variants.
+```{r}
+full_join(gnomad_afr,gnomad_amr) %>% full_join(gnomad_nfe) %>% full_join(gnomad_eas) %>% full_join(gnomad_sas) %>% full_join(gnomad_afr_total) %>% full_join(gnomad_nfe_total) %>% full_join(gnomad_eas_total) %>% full_join(gnomad_amr_total) %>% full_join(gnomad_sas_total) %>% 
+  mutate("% annotated AFR"=round((AFR/AFR_total)*100,2), "% annotated AMR"=round((AMR/AMR_total)*100,2), "% annotated NFE"=round((NFE/NFE_total)*100,2), "% annotated EAS"=round((EAS/EAS_total)*100,2), "% annotated SAS"=round((SAS/SAS_total)*100,2)) %>%
+  select(-c(NFE, EAS, AFR, SAS, AMR)) %>% 
+  rename(NFE="% annotated NFE",EAS="% annotated EAS",AMR="% annotated AMR",SAS="% annotated SAS",AFR="% annotated AFR") %>%
+  pivot_longer(cols=c(AFR, AMR, NFE, EAS, SAS), names_to = "Population", values_to = "Values") %>% 
+  select(gene, Population, Values) %>% 
+  ggplot(aes(x=Population,y=Values, shape=Population)) + geom_point() + geom_line(aes(group = gene), color = "black", linetype=6)+ facet_wrap(~gene) + theme(axis.text.x = element_text(angle = 35, hjust=1)) + ylim(0, 100) + scale_x_discrete(limits = c("NFE", "AFR", "AMR", "EAS", "SAS")) + labs(title= "Line graph of each population showing the percentage of 
+clinical annotation of all variants", y= "Percentage annotated")
+
+ggsave(here("output/variants_line.png"), width = 8, height = 6, dpi = 300)
+```

@@ -1,0 +1,175 @@
+gnomAD 2023 - BRCA1 - Population specific variant table & Comparison of unique and shared variants within population
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+```
+
+Loading data
+```{r}
+brca1 <- clean_names(read_csv(here("data/brca1.csv")))%>% mutate(gene="BRCA1",.before="chromosome")
+
+brca1_african_unique <- function() {brca1 %>% 
+  filter(allele_count_african_african_american!=0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0)}
+
+brca1_latino_unique <- function() {brca1 %>% 
+   filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american!=0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0)}
+
+brca1_european_unique <- function() {brca1 %>% 
+   filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish!=0 , allele_count_south_asian==0)}
+
+brca1_east_asian_unique <- function() {brca1 %>% 
+   filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian!=0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0)}
+
+brca1_south_asian_unique <- function() {brca1 %>% 
+   filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian!=0)}
+
+Pathogenic <- c("Pathogenic", "Pathogenic/Likely pathogenic", "Likely pathogenic")
+Benign <- c("Benign", "Benign/Likely benign", "Likely benign")
+Uncertain <- c("Uncertain significance", "Conflicting interpretations of pathogenicity")
+Splice <- c("splice_donor_variant", "splice_acceptor_variant", "splice_region_variant")
+Inframe <- c("inframe_deletion", "inframe_insertion")
+```
+
+African American
+```{r}
+brca1_african_table <- brca1_african_unique() %>% 
+  group_by(vep_annotation) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation)) %>% 
+  count(clin_var_clinical_significance) %>% mutate(Total= sum(n)) %>% 
+  mutate(Percent_in_ClinVar=round(prop.table(n),4)*100) %>% 
+  mutate(Percent_in_ClinVar = ifelse(is.na(clin_var_clinical_significance), 0, Percent_in_ClinVar)) %>%
+  pivot_wider(names_from = clin_var_clinical_significance, values_from = n) %>%
+  replace_na(list("Pathogenic" = 0, "Uncertain" = 0, "Benign" = 0, "NA" = 0)) %>%
+  rename(Not_in_ClinVar = "NA") %>%
+  mutate(In_Clinvar = sum(Pathogenic, Benign, Uncertain)) %>% 
+  summarise("% in ClinVar" = sum(Percent_in_ClinVar), Total=mean(Total), "Benign/Likely Benign"=sum(Benign), "Pathogenic/Likely Pathogenic"=sum(Pathogenic), Uncertain=sum(Uncertain), "Not in Clinvar"=sum(Not_in_ClinVar), In_ClinVar= mean(In_Clinvar)) %>% 
+  mutate("% Uncertain" = round((Uncertain/Total),4)*100) %>% 
+  select(vep_annotation, Total, In_ClinVar, "Pathogenic/Likely Pathogenic", "Benign/Likely Benign", Uncertain,"Not in Clinvar", "% in ClinVar", "% Uncertain") %>% 
+  arrange(vep_annotation) %>% 
+  add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain),"Not in Clinvar"=sum(.$"Not in Clinvar"), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
+```
+
+Latino
+```{r}
+brca1_latino_table <- brca1_latino_unique() %>% 
+  group_by(vep_annotation) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation)) %>% 
+  count(clin_var_clinical_significance) %>% mutate(Total= sum(n)) %>% 
+  mutate(Percent_in_ClinVar=round(prop.table(n),4)*100) %>% 
+  mutate(Percent_in_ClinVar = ifelse(is.na(clin_var_clinical_significance), 0, Percent_in_ClinVar)) %>%
+  pivot_wider(names_from = clin_var_clinical_significance, values_from = n) %>%
+  replace_na(list("Pathogenic" = 0, "Uncertain" = 0, "Benign" = 0, "NA" = 0)) %>%
+  rename(Not_in_ClinVar = "NA") %>%
+  mutate(In_Clinvar = sum(Pathogenic, Benign, Uncertain)) %>% 
+  summarise("% in ClinVar" = sum(Percent_in_ClinVar), Total=mean(Total), "Benign/Likely Benign"=sum(Benign), "Pathogenic/Likely Pathogenic"=sum(Pathogenic), Uncertain=sum(Uncertain), "Not in Clinvar"=sum(Not_in_ClinVar), In_ClinVar= mean(In_Clinvar)) %>% 
+  mutate("% Uncertain" = round((Uncertain/Total),4)*100) %>% 
+  select(vep_annotation, Total, In_ClinVar, "Pathogenic/Likely Pathogenic", "Benign/Likely Benign", Uncertain,"Not in Clinvar", "% in ClinVar", "% Uncertain") %>%
+  add_row(vep_annotation="start_lost", Total=0,In_ClinVar=0, "Pathogenic/Likely Pathogenic"=0, "Benign/Likely Benign"=0, Uncertain=0,"Not in Clinvar"=0, "% in ClinVar"=0, "% Uncertain"=0) %>% 
+  arrange(vep_annotation) %>% 
+  add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain),"Not in Clinvar"=sum(.$"Not in Clinvar"), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
+```
+
+European
+```{r}
+brca1_european_table <- brca1_european_unique() %>% 
+  group_by(vep_annotation) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation)) %>% 
+  count(clin_var_clinical_significance) %>% mutate(Total= sum(n)) %>% 
+  mutate(Percent_in_ClinVar=round(prop.table(n),4)*100) %>% 
+  mutate(Percent_in_ClinVar = ifelse(is.na(clin_var_clinical_significance), 0, Percent_in_ClinVar)) %>%
+  pivot_wider(names_from = clin_var_clinical_significance, values_from = n) %>%
+  replace_na(list("Pathogenic" = 0, "Uncertain" = 0, "Benign" = 0, "NA" = 0)) %>%
+  rename(Not_in_ClinVar = "NA") %>%
+  mutate(In_Clinvar = sum(Pathogenic, Benign, Uncertain)) %>% 
+  summarise("% in ClinVar" = sum(Percent_in_ClinVar), Total=mean(Total), "Benign/Likely Benign"=sum(Benign), "Pathogenic/Likely Pathogenic"=sum(Pathogenic), Uncertain=sum(Uncertain), "Not in Clinvar"=sum(Not_in_ClinVar), In_ClinVar= mean(In_Clinvar)) %>% 
+  mutate("% Uncertain" = round((Uncertain/Total),4)*100) %>% 
+  select(vep_annotation, Total, In_ClinVar, "Pathogenic/Likely Pathogenic", "Benign/Likely Benign", Uncertain,"Not in Clinvar", "% in ClinVar", "% Uncertain") %>%  
+  add_row(vep_annotation="start_lost", Total=0,In_ClinVar=0, "Pathogenic/Likely Pathogenic"=0, "Benign/Likely Benign"=0, Uncertain=0,"Not in Clinvar"=0, "% in ClinVar"=0, "% Uncertain"=0) %>% 
+  arrange(vep_annotation) %>% 
+  add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain),"Not in Clinvar"=sum(.$"Not in Clinvar"), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
+brca1_european_table %>% write.csv(here("output/brca1_nfe.csv"), row.names = F)
+```
+
+East asian
+```{r}
+brca1_east_asian_table <- brca1_east_asian_unique() %>% 
+  group_by(vep_annotation) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation)) %>% 
+  count(clin_var_clinical_significance) %>% mutate(Total= sum(n)) %>% 
+  mutate(Percent_in_ClinVar=round(prop.table(n),4)*100) %>% 
+  mutate(Percent_in_ClinVar = ifelse(is.na(clin_var_clinical_significance), 0, Percent_in_ClinVar)) %>%
+  pivot_wider(names_from = clin_var_clinical_significance, values_from = n) %>%
+  replace_na(list("Pathogenic" = 0, "Uncertain" = 0, "Benign" = 0, "NA" = 0)) %>%
+  rename(Not_in_ClinVar = "NA") %>%
+  mutate(In_Clinvar = sum(Pathogenic, Benign, Uncertain)) %>% 
+  summarise("% in ClinVar" = sum(Percent_in_ClinVar), Total=mean(Total), "Benign/Likely Benign"=sum(Benign), "Pathogenic/Likely Pathogenic"=sum(Pathogenic), Uncertain=sum(Uncertain), "Not in Clinvar"=sum(Not_in_ClinVar), In_ClinVar= mean(In_Clinvar)) %>% 
+  mutate("% Uncertain" = round((Uncertain/Total),4)*100) %>% 
+  select(vep_annotation, Total, In_ClinVar, "Pathogenic/Likely Pathogenic", "Benign/Likely Benign", Uncertain,"Not in Clinvar", "% in ClinVar", "% Uncertain") %>% 
+  arrange(vep_annotation) %>% 
+  add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain),"Not in Clinvar"=sum(.$"Not in Clinvar"), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
+```
+
+South asian
+```{r}
+brca1_south_asian_table <- brca1_south_asian_unique() %>% 
+  group_by(vep_annotation) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", vep_annotation%in%Stop ~ "stop_variant", TRUE ~ vep_annotation)) %>% 
+  count(clin_var_clinical_significance) %>% mutate(Total= sum(n)) %>% 
+  mutate(Percent_in_ClinVar=round(prop.table(n),4)*100) %>% 
+  mutate(Percent_in_ClinVar = ifelse(is.na(clin_var_clinical_significance), 0, Percent_in_ClinVar)) %>%
+  pivot_wider(names_from = clin_var_clinical_significance, values_from = n) %>%
+  replace_na(list("Pathogenic" = 0, "Uncertain" = 0, "Benign" = 0, "NA" = 0)) %>%
+  rename(Not_in_ClinVar = "NA") %>%
+  mutate(In_Clinvar = sum(Pathogenic, Benign, Uncertain)) %>% 
+  summarise("% in ClinVar" = sum(Percent_in_ClinVar), Total=mean(Total), "Benign/Likely Benign"=sum(Benign), "Pathogenic/Likely Pathogenic"=sum(Pathogenic), Uncertain=sum(Uncertain), "Not in Clinvar"=sum(Not_in_ClinVar), In_ClinVar= mean(In_Clinvar)) %>% 
+  mutate("% Uncertain" = round((Uncertain/Total),4)*100) %>% 
+  select(vep_annotation, Total, In_ClinVar, "Pathogenic/Likely Pathogenic", "Benign/Likely Benign", Uncertain,"Not in Clinvar", "% in ClinVar", "% Uncertain") %>% 
+  arrange(vep_annotation) %>% 
+  add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain),"Not in Clinvar"=sum(.$"Not in Clinvar"), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
+
+brca1_south_asian_table %>% write.csv(here("output/brca1_sa.csv"), row.names = F)
+```
+
+BRCA1 comparison of variants between population
+```{r}
+brca1 %>% filter(allele_count_african_african_american!=0) %>% count(chromosome)->Total_brca1_african
+brca1_african_unique() %>% count(chromosome) -> brca1_african_uni
+inner_join(Total_brca1_african,brca1_african_uni, by="chromosome") %>% mutate(n.z=n.x-n.y) %>% rename(Population=chromosome) -> African
+African["Population"] <-  "African"
+
+brca1 %>% filter(allele_count_latino_admixed_american!=0) %>% count(chromosome)->Total_brca1_latino
+brca1_latino_unique() %>% count(chromosome) -> brca1_latino_uni
+inner_join(Total_brca1_latino,brca1_latino_uni, by="chromosome") %>% mutate(n.z=n.x-n.y) %>% rename(Population=chromosome) -> Latino
+Latino["Population"] <-  "Latino"
+
+brca1 %>% filter(allele_count_european_non_finnish!=0) %>% count(chromosome)->Total_brca1_europe
+brca1_european_unique() %>% count(chromosome)->brca1_europe_uni
+inner_join(Total_brca1_europe,brca1_europe_uni, by="chromosome") %>% mutate(n.z=n.x-n.y) %>% rename(Population=chromosome) -> Europe
+Europe["Population"] <-  "Europe"
+
+brca1 %>% filter(allele_count_east_asian!=0) %>% count(chromosome)->Total_brca1_east_asia
+brca1_east_asian_unique() %>% count(chromosome)->brca1_east_asia_uni
+inner_join(Total_brca1_east_asia,brca1_east_asia_uni, by="chromosome") %>% mutate(n.z=n.x-n.y) %>% rename(Population=chromosome) -> East_asia
+East_asia["Population"] <-  "East_asia"
+
+brca1 %>% filter(allele_count_south_asian!=0) %>% count(chromosome) -> Total_brca1_south_asia
+brca1_south_asian_unique() %>% count(chromosome)->brca1_south_asia_uni
+inner_join(Total_brca1_south_asia,brca1_south_asia_uni, by="chromosome") %>% mutate(n.z=n.x-n.y) %>% rename(Population=chromosome) -> South_asia
+South_asia["Population"] <-  "South_asia"
+
+full_join(African, Latino) -> brca1TUS
+full_join(brca1TUS,Europe) -> brca1TUS
+full_join(brca1TUS,East_asia) -> brca1TUS
+full_join(brca1TUS, South_asia) -> brca1TUS
+brca1TUS %>% rename(Total=n.x, Unique=n.y, Shared=n.z) %>% select(-Total) %>% pivot_longer(cols = c(Unique, Shared), names_to = "Characteristics", values_to = "Values") %>% 
+  ggplot(aes(x=Population, y=Values, fill=Characteristics)) + geom_col(position="dodge") + geom_text(aes(label = Values), position = position_dodge(1))+ labs(title= "Comparison of shared and unique variants between populations 
+for the BRCA1 gene", y="Number of variants")
+
+ggsave(here("output/brca1_pop.png"), width = 8, height = 6, dpi = 300)
+```

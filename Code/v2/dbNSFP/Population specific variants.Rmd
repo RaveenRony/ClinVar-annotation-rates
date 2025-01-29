@@ -1,0 +1,1051 @@
+gnomad - Population specific Missense variants - Extracted for cross referencing with dbNSFP
+
+Checking for unique variants
+ATM
+African
+```{r}
+atm_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> atm_afr_ben
+
+atm_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> atm_afr_path
+
+atm_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> atm_afr_uncertain
+
+atm_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> atm_afr_blank
+```
+European
+```{r}
+atm_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> atm_euro_ben
+
+atm_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> atm_euro_path
+
+atm_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> atm_euro_uncertain
+
+atm_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> atm_euro_blank
+```
+Latino
+```{r}
+atm_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> atm_lat_ben
+
+atm_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> atm_lat_path
+
+atm_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> atm_lat_uncertain
+
+atm_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> atm_lat_blank
+```
+East Asia
+```{r}
+atm_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> atm_ea_ben
+
+atm_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> atm_ea_path
+
+atm_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> atm_ea_uncertain
+
+atm_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> atm_ea_blank
+```
+South Asia
+```{r}
+atm_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> atm_sa_ben
+
+atm_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> atm_sa_path
+
+atm_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> atm_sa_uncertain
+
+atm_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> atm_sa_blank
+```
+
+BARD1
+African
+```{r}
+bard1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> bard1_afr_ben
+
+bard1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> bard1_afr_path
+
+bard1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> bard1_afr_uncertain
+
+bard1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> bard1_afr_blank
+```
+European
+```{r}
+bard1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> bard1_euro_ben
+
+bard1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> bard1_euro_path
+
+bard1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> bard1_euro_uncertain
+
+bard1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> bard1_euro_blank
+```
+Latino
+```{r}
+bard1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> bard1_lat_ben
+
+bard1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> bard1_lat_path
+
+bard1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> bard1_lat_uncertain
+
+bard1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> bard1_lat_blank
+```
+East Asia
+```{r}
+bard1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> bard1_ea_ben
+
+bard1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> bard1_ea_path
+
+bard1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> bard1_ea_uncertain
+
+bard1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> bard1_ea_blank
+```
+South Asia
+```{r}
+bard1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> bard1_sa_ben
+
+bard1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> bard1_sa_path
+
+bard1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> bard1_sa_uncertain
+
+bard1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> bard1_sa_blank
+```
+
+BRCA1
+African
+```{r}
+brca1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca1_afr_ben
+
+brca1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca1_afr_path
+
+brca1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca1_afr_uncertain
+
+brca1_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca1_afr_blank
+```
+European
+```{r}
+brca1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca1_euro_ben
+
+brca1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca1_euro_path
+
+brca1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca1_euro_uncertain
+
+brca1_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca1_euro_blank
+```
+Latino
+```{r}
+brca1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca1_lat_ben
+
+brca1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca1_lat_path
+
+brca1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca1_lat_uncertain
+
+brca1_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca1_lat_blank
+```
+East Asia
+```{r}
+brca1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca1_ea_ben
+
+brca1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca1_ea_path
+
+brca1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca1_ea_uncertain
+
+brca1_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca1_ea_blank
+```
+South Asia
+```{r}
+brca1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> brca1_sa_ben
+
+brca1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> brca1_sa_path
+
+brca1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> brca1_sa_uncertain
+
+brca1_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> brca1_sa_blank
+```
+
+BRCA2
+African
+```{r}
+brca2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca2_afr_ben
+
+brca2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca2_afr_path
+
+brca2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca2_afr_uncertain
+
+brca2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca2_afr_blank
+```
+European
+```{r}
+brca2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca2_euro_ben
+
+brca2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca2_euro_path
+
+brca2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca2_euro_uncertain
+
+brca2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca2_euro_blank
+```
+Latino
+```{r}
+brca2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca2_lat_ben
+
+brca2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca2_lat_path
+
+brca2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca2_lat_uncertain
+
+brca2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca2_lat_blank
+```
+East Asia
+```{r}
+brca2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> brca2_ea_ben
+
+brca2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> brca2_ea_path
+
+brca2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> brca2_ea_uncertain
+
+brca2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> brca2_ea_blank
+```
+South Asia
+```{r}
+brca2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> brca2_sa_ben
+
+brca2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> brca2_sa_path
+
+brca2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> brca2_sa_uncertain
+
+brca2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> brca2_sa_blank
+```
+
+CHEK2
+African
+```{r}
+chek2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> chek2_afr_ben
+
+chek2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> chek2_afr_path
+
+chek2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> chek2_afr_uncertain
+
+chek2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> chek2_afr_blank
+```
+European
+```{r}
+chek2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> chek2_euro_ben
+
+chek2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> chek2_euro_path
+
+chek2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> chek2_euro_uncertain
+
+chek2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> chek2_euro_blank
+```
+Latino
+```{r}
+chek2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> chek2_lat_ben
+
+chek2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> chek2_lat_path
+
+chek2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> chek2_lat_uncertain
+
+chek2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> chek2_lat_blank
+```
+East Asia
+```{r}
+chek2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> chek2_ea_ben
+
+chek2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> chek2_ea_path
+
+chek2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> chek2_ea_uncertain
+
+chek2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> chek2_ea_blank
+```
+South Asia
+```{r}
+chek2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> chek2_sa_ben
+
+chek2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> chek2_sa_path
+
+chek2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> chek2_sa_uncertain
+
+chek2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> chek2_sa_blank
+```
+
+PALB2
+African
+```{r}
+palb2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> palb2_afr_ben
+
+palb2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> palb2_afr_path
+
+palb2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> palb2_afr_uncertain
+
+palb2_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> palb2_afr_blank
+```
+European
+```{r}
+palb2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> palb2_euro_ben
+
+palb2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> palb2_euro_path
+
+palb2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> palb2_euro_uncertain
+
+palb2_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> palb2_euro_blank
+```
+Latino
+```{r}
+palb2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> palb2_lat_ben
+
+palb2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> palb2_lat_path
+
+palb2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> palb2_lat_uncertain
+
+palb2_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> palb2_lat_blank
+```
+East Asia
+```{r}
+palb2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> palb2_ea_ben
+
+palb2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> palb2_ea_path
+
+palb2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> palb2_ea_uncertain
+
+palb2_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> palb2_ea_blank
+```
+South Asia
+```{r}
+palb2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> palb2_sa_ben
+
+palb2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> palb2_sa_path
+
+palb2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> palb2_sa_uncertain
+
+palb2_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> palb2_sa_blank
+```
+
+RAD51C
+African
+```{r}
+rad51c_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51c_afr_ben
+
+rad51c_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51c_afr_path
+
+rad51c_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51c_afr_uncertain
+
+rad51c_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51c_afr_blank
+```
+European
+```{r}
+rad51c_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51c_euro_ben
+
+rad51c_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51c_euro_path
+
+rad51c_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51c_euro_uncertain
+
+rad51c_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51c_euro_blank
+```
+Latino
+```{r}
+rad51c_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51c_lat_ben
+
+rad51c_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51c_lat_path
+
+rad51c_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51c_lat_uncertain
+
+rad51c_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51c_lat_blank
+```
+East Asia
+```{r}
+rad51c_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51c_ea_ben
+
+rad51c_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51c_ea_path
+
+rad51c_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51c_ea_uncertain
+
+rad51c_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51c_ea_blank
+```
+South Asia
+```{r}
+rad51c_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> rad51c_sa_ben
+
+rad51c_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> rad51c_sa_path
+
+rad51c_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> rad51c_sa_uncertain
+
+rad51c_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> rad51c_sa_blank
+```
+
+RAD51D
+African
+```{r}
+rad51d_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51d_afr_ben
+
+rad51d_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51d_afr_path
+
+rad51d_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51d_afr_uncertain
+
+rad51d_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51d_afr_blank
+```
+European
+```{r}
+rad51d_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51d_euro_ben
+
+rad51d_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51d_euro_path
+
+rad51d_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51d_euro_uncertain
+
+rad51d_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51d_euro_blank
+```
+Latino
+```{r}
+rad51d_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51d_lat_ben
+
+rad51d_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51d_lat_path
+
+rad51d_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51d_lat_uncertain
+
+rad51d_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51d_lat_blank
+```
+East Asia
+```{r}
+rad51d_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> rad51d_ea_ben
+
+rad51d_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> rad51d_ea_path
+
+rad51d_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> rad51d_ea_uncertain
+
+rad51d_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> rad51d_ea_blank
+```
+South Asia
+```{r}
+rad51d_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> rad51d_sa_ben
+
+rad51d_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> rad51d_sa_path
+
+rad51d_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> rad51d_sa_uncertain
+
+rad51d_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> rad51d_sa_blank
+```
+
+TP53
+African
+```{r}
+tp53_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> tp53_afr_ben
+
+tp53_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% 
+  mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> tp53_afr_path
+
+tp53_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> tp53_afr_uncertain
+
+tp53_african_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="afr",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> tp53_afr_blank
+```
+European
+```{r}
+tp53_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> tp53_euro_ben
+
+tp53_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> tp53_euro_path
+
+tp53_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> tp53_euro_uncertain
+
+tp53_european_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="euro",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> tp53_euro_blank
+```
+Latino
+```{r}
+tp53_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> tp53_lat_ben
+
+tp53_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> tp53_lat_path
+
+tp53_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> tp53_lat_uncertain
+
+tp53_latino_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="lat",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> tp53_lat_blank
+```
+East Asia
+```{r}
+tp53_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign") -> tp53_ea_ben
+
+tp53_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic") -> tp53_ea_path
+
+tp53_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain") -> tp53_ea_uncertain
+
+tp53_east_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="ea",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance)) -> tp53_ea_blank
+```
+South Asia
+```{r}
+tp53_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Benign")  -> tp53_sa_ben
+
+tp53_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Pathogenic")  -> tp53_sa_path
+
+tp53_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(clin_var_clinical_significance=="Uncertain")  -> tp53_sa_uncertain
+
+tp53_south_asian_unique() %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ NA, TRUE~clin_var_clinical_significance)) %>% mutate(Population="sa",.after=chromosome) %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  filter(is.na(clin_var_clinical_significance))  -> tp53_sa_blank
+```
+
+Extracting population unique variants and cross referencing with entire dbNSFP
+```{r}
+full_join(atm_afr_ben, atm_afr_path) %>% full_join(atm_afr_uncertain) %>% full_join(atm_afr_blank) %>% full_join(atm_euro_ben) %>% full_join(atm_euro_path) %>% full_join(atm_euro_blank) %>% full_join(atm_euro_uncertain) %>% full_join(atm_lat_ben) %>% full_join(atm_lat_blank) %>% full_join(atm_lat_path) %>% full_join(atm_lat_uncertain) %>% full_join(atm_ea_ben) %>% full_join(atm_ea_blank) %>% full_join(atm_ea_uncertain) %>% full_join(atm_ea_path) %>% full_join(atm_sa_ben) %>% full_join(atm_sa_blank) %>% full_join(atm_sa_uncertain) %>% full_join(atm_sa_path) -> atm_unique
+
+full_join(bard1_afr_ben, bard1_afr_path) %>% full_join(bard1_afr_uncertain) %>% full_join(bard1_afr_blank) %>% full_join(bard1_euro_ben) %>% full_join(bard1_euro_path) %>% full_join(bard1_euro_blank) %>% full_join(bard1_euro_uncertain) %>% full_join(bard1_lat_ben) %>% full_join(bard1_lat_blank) %>% full_join(bard1_lat_path) %>% full_join(bard1_lat_uncertain) %>% full_join(bard1_ea_ben) %>% full_join(bard1_ea_blank) %>% full_join(bard1_ea_uncertain) %>% full_join(bard1_ea_path) %>% full_join(bard1_sa_ben) %>% full_join(bard1_sa_blank) %>% full_join(bard1_sa_uncertain) %>% full_join(bard1_sa_path) -> bard1_unique
+
+full_join(brca1_afr_ben, brca1_afr_path) %>% full_join(brca1_afr_uncertain) %>% full_join(brca1_afr_blank) %>% full_join(brca1_euro_ben) %>% full_join(brca1_euro_path) %>% full_join(brca1_euro_blank) %>% full_join(brca1_euro_uncertain) %>% full_join(brca1_lat_ben) %>% full_join(brca1_lat_blank) %>% full_join(brca1_lat_path) %>% full_join(brca1_lat_uncertain) %>% full_join(brca1_ea_ben) %>% full_join(brca1_ea_blank) %>% full_join(brca1_ea_uncertain) %>% full_join(brca1_ea_path) %>% full_join(brca1_sa_ben) %>% full_join(brca1_sa_blank) %>% full_join(brca1_sa_uncertain) %>% full_join(brca1_sa_path) -> brca1_unique
+
+full_join(brca2_afr_ben, brca2_afr_path) %>% full_join(brca2_afr_uncertain) %>% full_join(brca2_afr_blank) %>% full_join(brca2_euro_ben) %>% full_join(brca2_euro_path) %>% full_join(brca2_euro_blank) %>% full_join(brca2_euro_uncertain) %>% full_join(brca2_lat_ben) %>% full_join(brca2_lat_blank) %>% full_join(brca2_lat_path) %>% full_join(brca2_lat_uncertain) %>% full_join(brca2_ea_ben) %>% full_join(brca2_ea_blank) %>% full_join(brca2_ea_uncertain) %>% full_join(brca2_ea_path) %>% full_join(brca2_sa_ben) %>% full_join(brca2_sa_blank) %>% full_join(brca2_sa_uncertain) %>% full_join(brca2_sa_path) -> brca2_unique
+
+full_join(chek2_afr_ben, chek2_afr_path) %>% full_join(chek2_afr_uncertain) %>% full_join(chek2_afr_blank) %>% full_join(chek2_euro_ben) %>% full_join(chek2_euro_path) %>% full_join(chek2_euro_blank) %>% full_join(chek2_euro_uncertain) %>% full_join(chek2_lat_ben) %>% full_join(chek2_lat_blank) %>% full_join(chek2_lat_path) %>% full_join(chek2_lat_uncertain) %>% full_join(chek2_ea_ben) %>% full_join(chek2_ea_blank) %>% full_join(chek2_ea_uncertain) %>% full_join(chek2_ea_path) %>% full_join(chek2_sa_ben) %>% full_join(chek2_sa_blank) %>% full_join(chek2_sa_uncertain) %>% full_join(chek2_sa_path) -> chek2_unique
+
+full_join(palb2_afr_ben, palb2_afr_path) %>% full_join(palb2_afr_uncertain) %>% full_join(palb2_afr_blank) %>% full_join(palb2_euro_ben) %>% full_join(palb2_euro_path) %>% full_join(palb2_euro_blank) %>% full_join(palb2_euro_uncertain) %>% full_join(palb2_lat_ben) %>% full_join(palb2_lat_blank) %>% full_join(palb2_lat_path) %>% full_join(palb2_lat_uncertain) %>% full_join(palb2_ea_ben) %>% full_join(palb2_ea_blank) %>% full_join(palb2_ea_uncertain) %>% full_join(palb2_ea_path) %>% full_join(palb2_sa_ben) %>% full_join(palb2_sa_blank) %>% full_join(palb2_sa_uncertain) %>% full_join(palb2_sa_path) -> palb2_unique
+
+full_join(rad51c_afr_ben, rad51c_afr_path) %>% full_join(rad51c_afr_uncertain) %>% full_join(rad51c_afr_blank) %>% full_join(rad51c_euro_ben) %>% full_join(rad51c_euro_path) %>% full_join(rad51c_euro_blank) %>% full_join(rad51c_euro_uncertain) %>% full_join(rad51c_lat_ben) %>% full_join(rad51c_lat_blank) %>% full_join(rad51c_lat_path) %>% full_join(rad51c_lat_uncertain) %>% full_join(rad51c_ea_ben) %>% full_join(rad51c_ea_blank) %>% full_join(rad51c_ea_uncertain) %>% full_join(rad51c_ea_path) %>% full_join(rad51c_sa_ben) %>% full_join(rad51c_sa_blank) %>% full_join(rad51c_sa_uncertain) %>% full_join(rad51c_sa_path) -> rad51c_unique
+
+full_join(rad51d_afr_ben, rad51d_afr_path) %>% full_join(rad51d_afr_uncertain) %>% full_join(rad51d_afr_blank) %>% full_join(rad51d_euro_ben) %>% full_join(rad51d_euro_path) %>% full_join(rad51d_euro_blank) %>% full_join(rad51d_euro_uncertain) %>% full_join(rad51d_lat_ben) %>% full_join(rad51d_lat_blank) %>% full_join(rad51d_lat_path) %>% full_join(rad51d_lat_uncertain) %>% full_join(rad51d_ea_ben) %>% full_join(rad51d_ea_blank) %>% full_join(rad51d_ea_uncertain) %>% full_join(rad51d_ea_path) %>% full_join(rad51d_sa_ben) %>% full_join(rad51d_sa_blank) %>% full_join(rad51d_sa_uncertain) %>% full_join(rad51d_sa_path) -> rad51d_unique
+
+full_join(tp53_afr_ben, tp53_afr_path) %>% full_join(tp53_afr_uncertain) %>% full_join(tp53_afr_blank) %>% full_join(tp53_euro_ben) %>% full_join(tp53_euro_path) %>% full_join(tp53_euro_blank) %>% full_join(tp53_euro_uncertain) %>% full_join(tp53_lat_ben) %>% full_join(tp53_lat_blank) %>% full_join(tp53_lat_path) %>% full_join(tp53_lat_uncertain) %>% full_join(tp53_ea_ben) %>% full_join(tp53_ea_blank) %>% full_join(tp53_ea_uncertain) %>% full_join(tp53_ea_path) %>% full_join(tp53_sa_ben) %>% full_join(tp53_sa_blank) %>% full_join(tp53_sa_uncertain) %>% full_join(tp53_sa_path) -> tp53_unique
+
+full_join(atm_unique, bard1_unique) %>% full_join(brca1_unique) %>% full_join(brca2_unique) %>% full_join(chek2_unique) %>% full_join(palb2_unique) %>% full_join(rad51c_unique) %>% full_join(rad51d_unique) %>% full_join(tp53_unique) -> gnomad_unique
+```
