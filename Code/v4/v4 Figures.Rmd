@@ -979,8 +979,9 @@ gnomadv4_fisher <- gnomadv4_count %>%
 
 #Function for calculating fisher exact test comparing pathogenicity between populations for genes in clinvar 
 gnomadv4fisher_path <- function(x,y) {gnomadv4_fisher %>% 
-  filter(gene==x,
-         population==y| population=="NFE") %>% 
+  filter(gene == x, population %in% c(y, "NFE")) %>% 
+  mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()}
 
@@ -1042,35 +1043,44 @@ gnomadv4fisher_path("TP53", "SAS")
 gnomadv4_fisher %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AFR"| population=="NFE") %>% 
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AMR"| population=="NFE") %>% 
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="EAS"| population=="NFE") %>% 
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="SAS"| population=="NFE") %>% 
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 #Function for calculating fisher exact test comparing unreported between populations for genes in clinvar 
 gnomadv4fisher_unr <- function(x,y) {gnomadv4_fisher %>% 
-  filter(gene==x,
-         population==y| population=="NFE") %>% 
+  filter(gene == x, population %in% c(y, "NFE")) %>% 
+  mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()}
 
@@ -1131,29 +1141,37 @@ gnomadv4fisher_unr("TP53", "SAS")
 #All genes
 gnomadv4_fisher %>% 
   group_by(population) %>% 
-  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AFR"| population=="NFE") %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>%
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
-  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AMR"| population=="NFE") %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>%
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
-  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="EAS"| population=="NFE") %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>%
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher %>% 
   group_by(population) %>% 
-  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="SAS"| population=="NFE") %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>%
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 ```
@@ -1186,8 +1204,9 @@ gnomadv4_fisher_combination <- gnomadv4_count %>%
 
 #Function for calculating fisher exact test comparing pathogenicity between populations for genes in clinvar 
 gnomadv4fisher_path_comb <- function(x,y) {gnomadv4_fisher_combination %>% 
-  filter(gene==x,
-         population==y| population=="NFE") %>% 
+  filter(gene == x, population %in% c(y, "NFE")) %>% 
+  mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()}
 
@@ -1249,35 +1268,44 @@ gnomadv4fisher_path_comb("TP53", "SAS")
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AFR"| population=="NFE") %>% 
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AMR"| population=="NFE") %>% 
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="EAS"| population=="NFE") %>% 
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(pathogenic_variants = sum(pathogenic_variants), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="SAS"| population=="NFE") %>% 
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(pathogenic_variants, in_clinvar) %>% 
   fisher.test()
 
 #Function for calculating fisher exact test comparing unreported between populations for genes in clinvar 
 gnomadv4fisher_unr_comb <- function(x,y) {gnomadv4_fisher_combination %>% 
-  filter(gene==x,
-         population==y| population=="NFE") %>% 
+  filter(gene == x, population %in% c(y, "NFE")) %>% 
+  mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()}
 
@@ -1339,28 +1367,36 @@ gnomadv4fisher_unr_comb("TP53", "SAS")
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AFR"| population=="NFE") %>% 
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="AMR"| population=="NFE") %>% 
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination %>% 
   group_by(population) %>% 
   summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="EAS"| population=="NFE") %>% 
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 
 gnomadv4_fisher_combination%>% 
   group_by(population) %>% 
   summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-  filter(population=="SAS"| population=="NFE") %>% 
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>% 
   select(unreported, in_clinvar) %>% 
   fisher.test()
 ```
@@ -1369,202 +1405,220 @@ Fisher Results v2
 ```{r}
 gnomad_path <- gnomad_count %>% mutate(population = case_when(Population == "African_american" ~ "AFR", Population == "Latino_admixed_american" ~ "AMR", Population == "Non_finnish_european" ~ "NFE", Population == "East_asian" ~ "EAS", Population == "South_asian" ~ "SAS"), .after = "Population") %>% select(-Population) %>% filter(clin_var_clinical_significance == "Pathogenic") %>% group_by(gene) %>% count(population) %>% rename("pathogenic" = "n")
   
-  gnomad_total <- gnomad_count %>% mutate(population = case_when(Population == "African_american" ~ "AFR", Population == "Latino_admixed_american" ~ "AMR", Population == "Non_finnish_european" ~ "NFE", Population == "East_asian" ~ "EAS", Population == "South_asian" ~ "SAS"), .after = "Population") %>% select(-Population) %>% group_by(gene) %>% count(population) %>% 
+gnomad_total <- gnomad_count %>% mutate(population = case_when(Population == "African_american" ~ "AFR", Population == "Latino_admixed_american" ~ "AMR", Population == "Non_finnish_european" ~ "NFE", Population == "East_asian" ~ "EAS", Population == "South_asian" ~ "SAS"), .after = "Population") %>% select(-Population) %>% group_by(gene) %>% count(population) %>% 
     rename("total" = "n")
   
-  gnomad_fisher <- gnomad_count %>% mutate(population = case_when(Population == "African_american" ~ "AFR", Population == "Latino_admixed_american" ~ "AMR", Population == "Non_finnish_european" ~ "NFE", Population == "East_asian" ~ "EAS", Population == "South_asian" ~ "SAS"), .after = "Population") %>% 
-    mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "unreported", T ~ clin_var_clinical_significance)) %>% 
-    select(-Population) %>% unite(test, gene, population, sep=" ") %>% 
-    group_by(test) %>%
-    count(clin_var_clinical_significance) %>%
-    ungroup() %>%
-    complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
-    group_by(test) %>% 
-    filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>%
-    summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
-    separate(test, into = c("gene", "population"), sep = " ") %>% 
-    full_join(gnomad_path) %>% full_join(gnomad_total) %>%
-    mutate(unreported = (total - in_clinvar)) %>% 
-    replace_na(list(pathogenic=0))
+gnomad_fisher <- gnomad_count %>% mutate(population = case_when(Population == "African_american" ~ "AFR", Population == "Latino_admixed_american" ~ "AMR", Population == "Non_finnish_european" ~ "NFE", Population == "East_asian" ~ "EAS", Population == "South_asian" ~ "SAS"), .after = "Population") %>% 
+  mutate(clin_var_clinical_significance = case_when(clin_var_clinical_significance == "Blank" ~ "unreported", T ~ clin_var_clinical_significance)) %>% 
+  select(-Population) %>% unite(test, gene, population, sep=" ") %>% 
+  group_by(test) %>%
+  count(clin_var_clinical_significance) %>%
+  ungroup() %>%
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>%
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomad_path) %>% full_join(gnomad_total) %>%
+  mutate(unreported = (total - in_clinvar)) %>% 
+  replace_na(list(pathogenic=0))
   
-  gnomadfisher_path <- function(x,y) {gnomad_fisher %>% 
-    filter(gene==x,
-           population==y| population=="NFE") %>% 
+gnomadfisher_path <- function(x,y) {gnomad_fisher %>% 
+    filter(gene == x, population %in% c(y, "NFE")) %>% 
+    mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+    arrange(population) %>%
     select(pathogenic, in_clinvar) %>% 
     fisher.test()}
   
-  #ATM
-  gnomadfisher_path("atm", "AFR")
-  gnomadfisher_path("atm", "AMR")
-  gnomadfisher_path("atm", "EAS")
-  gnomadfisher_path("atm", "SAS")
+#ATM
+gnomadfisher_path("atm", "AFR")
+gnomadfisher_path("atm", "AMR")
+gnomadfisher_path("atm", "EAS")
+gnomadfisher_path("atm", "SAS")
+
+#BARD1
+gnomadfisher_path("bard1", "AFR")
+gnomadfisher_path("bard1", "AMR")
+gnomadfisher_path("bard1", "EAS")
+gnomadfisher_path("bard1", "SAS")
+
+#BRCA1
+gnomadfisher_path("brca1", "AFR")
+gnomadfisher_path("brca1", "AMR")
+gnomadfisher_path("brca1", "EAS")
+gnomadfisher_path("brca1", "SAS")
+
+#BRCA2
+gnomadfisher_path("brca2", "AFR")
+gnomadfisher_path("brca2", "AMR")
+gnomadfisher_path("brca2", "EAS")
+gnomadfisher_path("brca2", "SAS")
+
+#CHEK2
+gnomadfisher_path("chek2", "AFR")
+gnomadfisher_path("chek2", "AMR")
+gnomadfisher_path("chek2", "EAS")
+gnomadfisher_path("chek2", "SAS")
+
+#PALB2
+gnomadfisher_path("palb2", "AFR")
+gnomadfisher_path("palb2", "AMR")
+gnomadfisher_path("palb2", "EAS")
+gnomadfisher_path("palb2", "SAS")
+
+#RAD51C
+gnomadfisher_path("rad51c", "AFR")
+gnomadfisher_path("rad51c", "AMR")
+gnomadfisher_path("rad51c", "EAS")
+gnomadfisher_path("rad51c", "SAS")
+
+#RAD51D
+gnomadfisher_path("rad51d", "AFR")
+gnomadfisher_path("rad51d", "AMR")
+gnomadfisher_path("rad51d", "EAS")
+gnomadfisher_path("rad51d", "SAS")
   
-  #BARD1
-  gnomadfisher_path("bard1", "AFR")
-  gnomadfisher_path("bard1", "AMR")
-  gnomadfisher_path("bard1", "EAS")
-  gnomadfisher_path("bard1", "SAS")
-  
-  #BRCA1
-  gnomadfisher_path("brca1", "AFR")
-  gnomadfisher_path("brca1", "AMR")
-  gnomadfisher_path("brca1", "EAS")
-  gnomadfisher_path("brca1", "SAS")
-  
-  #BRCA2
-  gnomadfisher_path("brca2", "AFR")
-  gnomadfisher_path("brca2", "AMR")
-  gnomadfisher_path("brca2", "EAS")
-  gnomadfisher_path("brca2", "SAS")
-  
-  #CHEK2
-  gnomadfisher_path("chek2", "AFR")
-  gnomadfisher_path("chek2", "AMR")
-  gnomadfisher_path("chek2", "EAS")
-  gnomadfisher_path("chek2", "SAS")
-  
-  #PALB2
-  gnomadfisher_path("palb2", "AFR")
-  gnomadfisher_path("palb2", "AMR")
-  gnomadfisher_path("palb2", "EAS")
-  gnomadfisher_path("palb2", "SAS")
-  
-  #RAD51C
-  gnomadfisher_path("rad51c", "AFR")
-  gnomadfisher_path("rad51c", "AMR")
-  gnomadfisher_path("rad51c", "EAS")
-  gnomadfisher_path("rad51c", "SAS")
-  
-  #RAD51D
-  gnomadfisher_path("rad51d", "AFR")
-  gnomadfisher_path("rad51d", "AMR")
-  gnomadfisher_path("rad51d", "EAS")
-  gnomadfisher_path("rad51d", "SAS")
-  
-  #TP53
-  gnomadfisher_path("tp53", "AFR")
-  gnomadfisher_path("tp53", "AMR")
-  gnomadfisher_path("tp53", "EAS")
-  gnomadfisher_path("tp53", "SAS")
-  
-  #All genes
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="AFR"| population=="NFE") %>% 
-    select(pathogenic, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="AMR"| population=="NFE") %>% 
-    select(pathogenic, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="EAS"| population=="NFE") %>% 
-    select(pathogenic, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="SAS"| population=="NFE") %>% 
-    select(pathogenic, in_clinvar) %>% 
-    fisher.test()
-  
-  #Function for calculating fisher exact test comparing unreported between populations for genes in clinvar 
-  gnomadfisher_unr <- function(x,y) {gnomad_fisher %>% 
-    filter(gene==x,
-           population==y| population=="NFE") %>% 
+#TP53
+gnomadfisher_path("tp53", "AFR")
+gnomadfisher_path("tp53", "AMR")
+gnomadfisher_path("tp53", "EAS")
+gnomadfisher_path("tp53", "SAS")
+
+#All genes
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>%
+  select(pathogenic, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>%
+  select(pathogenic, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
+  select(pathogenic, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(pathogenic = sum(pathogenic), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>%
+  select(pathogenic, in_clinvar) %>% 
+  fisher.test()
+
+#Function for calculating fisher exact test comparing unreported between populations for genes in clinvar 
+gnomadfisher_unr <- function(x,y) {gnomad_fisher %>% 
+    filter(gene == x, population %in% c(y, "NFE")) %>% 
+    mutate(population = factor(population, levels = c(y, "NFE"))) %>% 
+    arrange(population) %>%
     select(unreported, in_clinvar) %>% 
     fisher.test()}
-  
-  #ATM
-  gnomadfisher_unr("atm", "AFR")
-  gnomadfisher_unr("atm", "AMR")
-  gnomadfisher_unr("atm", "EAS")
-  gnomadfisher_unr("atm", "SAS")
-  
-  #BARD1
-  gnomadfisher_unr("bard1", "AFR")
-  gnomadfisher_unr("bard1", "AMR")
-  gnomadfisher_unr("bard1", "EAS")
-  gnomadfisher_unr("bard1", "SAS")
-  
-  #BRCA1
-  gnomadfisher_unr("brca1", "AFR")
-  gnomadfisher_unr("brca1", "AMR")
-  gnomadfisher_unr("brca1", "EAS")
-  gnomadfisher_unr("brca1", "SAS")
-  
-  #BRCA2
-  gnomadfisher_unr("brca2", "AFR")
-  gnomadfisher_unr("brca2", "AMR")
-  gnomadfisher_unr("brca2", "EAS")
-  gnomadfisher_unr("brca2", "SAS")
-  
-  #CHEK2
-  gnomadfisher_unr("chek2", "AFR")
-  gnomadfisher_unr("chek2", "AMR")
-  gnomadfisher_unr("chek2", "EAS")
-  gnomadfisher_unr("chek2", "SAS")
-  
-  #PALB2
-  gnomadfisher_unr("palb2", "AFR")
-  gnomadfisher_unr("palb2", "AMR")
-  gnomadfisher_unr("palb2", "EAS")
-  gnomadfisher_unr("palb2", "SAS")
-  
-  #RAD51C
-  gnomadfisher_unr("rad51c", "AFR")
-  gnomadfisher_unr("rad51c", "AMR")
-  gnomadfisher_unr("rad51c", "EAS")
-  gnomadfisher_unr("rad51c", "SAS")
-  
-  #RAD51D
-  gnomadfisher_unr("rad51d", "AFR")
-  gnomadfisher_unr("rad51d", "AMR")
-  gnomadfisher_unr("rad51d", "EAS")
-  gnomadfisher_unr("rad51d", "SAS")
-  
-  #TP53
-  gnomadfisher_unr("tp53", "AFR")
-  gnomadfisher_unr("tp53", "AMR")
-  gnomadfisher_unr("tp53", "EAS")
-  gnomadfisher_unr("tp53", "SAS")
-  
-  #All genes
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="AFR"| population=="NFE") %>% 
-    select(unreported, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="AMR"| population=="NFE") %>% 
-    select(unreported, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="EAS"| population=="NFE") %>% 
-    select(unreported, in_clinvar) %>% 
-    fisher.test()
-  
-  gnomad_fisher %>% 
-    group_by(population) %>% 
-    summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
-    filter(population=="SAS"| population=="NFE") %>% 
-    select(unreported, in_clinvar) %>% 
-    fisher.test()
+
+#ATM
+gnomadfisher_unr("atm", "AFR")
+gnomadfisher_unr("atm", "AMR")
+gnomadfisher_unr("atm", "EAS")
+gnomadfisher_unr("atm", "SAS")
+
+#BARD1
+gnomadfisher_unr("bard1", "AFR")
+gnomadfisher_unr("bard1", "AMR")
+gnomadfisher_unr("bard1", "EAS")
+gnomadfisher_unr("bard1", "SAS")
+
+#BRCA1
+gnomadfisher_unr("brca1", "AFR")
+gnomadfisher_unr("brca1", "AMR")
+gnomadfisher_unr("brca1", "EAS")
+gnomadfisher_unr("brca1", "SAS")
+
+#BRCA2
+gnomadfisher_unr("brca2", "AFR")
+gnomadfisher_unr("brca2", "AMR")
+gnomadfisher_unr("brca2", "EAS")
+gnomadfisher_unr("brca2", "SAS")
+
+#CHEK2
+gnomadfisher_unr("chek2", "AFR")
+gnomadfisher_unr("chek2", "AMR")
+gnomadfisher_unr("chek2", "EAS")
+gnomadfisher_unr("chek2", "SAS")
+
+#PALB2
+gnomadfisher_unr("palb2", "AFR")
+gnomadfisher_unr("palb2", "AMR")
+gnomadfisher_unr("palb2", "EAS")
+gnomadfisher_unr("palb2", "SAS")
+
+#RAD51C
+gnomadfisher_unr("rad51c", "AFR")
+gnomadfisher_unr("rad51c", "AMR")
+gnomadfisher_unr("rad51c", "EAS")
+gnomadfisher_unr("rad51c", "SAS")
+
+#RAD51D
+gnomadfisher_unr("rad51d", "AFR")
+gnomadfisher_unr("rad51d", "AMR")
+gnomadfisher_unr("rad51d", "EAS")
+gnomadfisher_unr("rad51d", "SAS")
+
+#TP53
+gnomadfisher_unr("tp53", "AFR")
+gnomadfisher_unr("tp53", "AMR")
+gnomadfisher_unr("tp53", "EAS")
+gnomadfisher_unr("tp53", "SAS")
+
+#All genes
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("AFR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AFR", "NFE"))) %>% 
+  arrange(population) %>%
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("AMR", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("AMR", "NFE"))) %>% 
+  arrange(population) %>%
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("EAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("EAS", "NFE"))) %>% 
+  arrange(population) %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomad_fisher %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population %in% c("SAS", "NFE")) %>% 
+  mutate(population = factor(population, levels = c("SAS", "NFE"))) %>% 
+  arrange(population) %>%
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
 ```
 
 Tables for paper

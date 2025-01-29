@@ -326,3 +326,14 @@ Fig 1D breakdown
 ```{r}
 gnomadv4_count %>% filter(clin_var_clinical_significance=="Unreported") %>% count(vep_annotation) %>% mutate(percent = round((n/sum(n))*100,2))
 ```
+
+Number of unreported variants that are population-private
+```{r}
+gnomadv4_count %>% 
+  filter(clin_var_clinical_significance=="Unreported") %>% 
+  group_by(gene) %>% 
+  count(population) %>% 
+  pivot_wider(names_from = population, values_from = n) %>% 
+  write.csv(here("output/v4/csv files/unreported_number.csv"))
+```
+
