@@ -1,0 +1,339 @@
+Library of packages
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(visdat)
+library(skimr)
+library(rstatix)
+library(dplyr)
+library(knitr)
+library('corrr')
+library(ggcorrplot)
+library("FactoMineR")
+library(factoextra)
+library(rtracklayer)
+library(GenomicRanges)
+```
+
+Number of alleles per population per gene
+```{r}
+gnomadv4 %>% 
+  rename("AFR" = "allele_count_african_african_american", "AMR" = "allele_count_admixed_american", "EAS" = "allele_count_east_asian", "NFE" = "allele_count_european_non_finnish", "SAS" = "allele_count_south_asian") %>% 
+  pivot_longer(names_to = "population", values_to = "values", cols = c("AFR", "AMR", "NFE", "EAS", "SAS")) %>% 
+  select(gnom_ad_id, gene, population, values) %>% filter(values!=0) %>% group_by(population) %>% count(gene) %>% pivot_wider(names_from = "population", values_from = "n") %>% mutate(Total = rowSums(select(.,-gene))) %>% ungroup() %>% bind_rows(summarise(.,across(where(is.numeric), sum, na.rm=T)) %>% mutate(gene="Total")) %>% write_csv(here("output/v4/populations.csv"))
+```
+
+Frequency Graphs of Frameshift, Splice Site and Stop Lost variants combined and Missense Variants.
+```{r}
+gnomadv4_frame_total <- gnomadv4_count %>% filter(vep_annotation=="frameshift_variant") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_splice_total <- gnomadv4_count %>% filter(vep_annotation=="splice_site_variant") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_missense_total <- gnomadv4_count %>% filter(vep_annotation=="missense_variant") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_frame_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population", title = "Percentage of frameshift variants that are reported in ClinVar")
+ggsave(here("output/v4/Frameshift.png"), width = 8, height = 6, dpi = 300)
+  
+gnomadv4_count %>%
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_missense_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population", title = "Percentage of missense variants that are reported in ClinVar")
+ggsave(here("output/v4/Missense.png"), width = 8, height = 6, dpi = 300)
+  
+gnomadv4_count %>%
+  filter(vep_annotation=="splice_site_variant") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_splice_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population", title = "Percentage of splice site variants that are reported in ClinVar")
+ggsave(here("output/v4/Splice.png"), width = 8, height = 6, dpi = 300)
+
+gnomadv4_combine_total <- gnomadv4_count %>% filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_combine_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  facet_wrap(~gene) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", shape = "Population")
+ggsave(here("output/v4/Combine.png"), width = 8, height = 6, dpi = 300)
+
+gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% 
+  unite(test, gene, population, vep_annotation, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population", "vep_annotation"), sep = " ") %>% 
+  full_join(gnomadv4_combine_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  write.csv(here("output/v4/csv files/annotation.csv"))
+
+gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_combine_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  write.csv(here("output/v4/csv files/annotation_combine.csv"))
+
+gnomadv4_count %>%
+  filter(vep_annotation=="missense_variant") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_missense_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  write.csv(here("output/v4/csv files/annotation_missense.csv"))
+```
+
+Combined Fisher Exact results of Frameshift, Splice Site and Stop Lost variants
+```{r}
+gnomadv4_fisher_combine <- gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_variant") %>% 
+  unite(test, gene, population, sep = " ") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
+  full_join(gnomadv4_combine_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2),
+         unreported = (total-in_clinvar))
+
+gnomadv4fisher_combine <- function(x,y) {gnomadv4_fisher_combine %>% 
+  filter(gene==x,
+         population==y| population=="NFE") %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()}
+
+gnomadv4fisher_combine("ATM", "AFR")
+gnomadv4fisher_combine("ATM", "AMR")
+gnomadv4fisher_combine("ATM", "EAS")
+gnomadv4fisher_combine("ATM", "SAS")
+
+gnomadv4fisher_combine("BARD1", "AFR")
+gnomadv4fisher_combine("BARD1", "AMR")
+gnomadv4fisher_combine("BARD1", "EAS")
+gnomadv4fisher_combine("BARD1", "SAS")
+
+gnomadv4fisher_combine("BRCA1", "AFR")
+gnomadv4fisher_combine("BRCA1", "AMR")
+gnomadv4fisher_combine("BRCA1", "EAS")
+gnomadv4fisher_combine("BRCA1", "SAS")
+
+gnomadv4fisher_combine("BRCA2", "AFR")
+gnomadv4fisher_combine("BRCA2", "AMR")
+gnomadv4fisher_combine("BRCA2", "EAS")
+gnomadv4fisher_combine("BRCA2", "SAS")
+
+gnomadv4fisher_combine("CHEK2", "AFR")
+gnomadv4fisher_combine("CHEK2", "AMR")
+gnomadv4fisher_combine("CHEK2", "EAS")
+gnomadv4fisher_combine("CHEK2", "SAS")
+
+gnomadv4fisher_combine("PALB2", "AFR")
+gnomadv4fisher_combine("PALB2", "AMR")
+gnomadv4fisher_combine("PALB2", "EAS")
+gnomadv4fisher_combine("PALB2", "SAS")
+
+gnomadv4fisher_combine("RAD51C", "AFR")
+gnomadv4fisher_combine("RAD51C", "AMR")
+gnomadv4fisher_combine("RAD51C", "EAS")
+gnomadv4fisher_combine("RAD51C", "SAS")
+
+gnomadv4fisher_combine("RAD51D", "AFR")
+gnomadv4fisher_combine("RAD51D", "AMR")
+gnomadv4fisher_combine("RAD51D", "EAS")
+gnomadv4fisher_combine("RAD51D", "SAS")
+
+gnomadv4fisher_combine("TP53", "AFR")
+gnomadv4fisher_combine("TP53", "AMR")
+gnomadv4fisher_combine("TP53", "EAS")
+gnomadv4fisher_combine("TP53", "SAS")
+
+gnomadv4_fisher_combine %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population=="AFR"| population=="NFE") %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomadv4_fisher_combine %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population=="AMR"| population=="NFE") %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomadv4_fisher_combine %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population=="EAS"| population=="NFE") %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+
+gnomadv4_fisher_combine %>% 
+  group_by(population) %>% 
+  summarise(unreported = sum(unreported), in_clinvar = sum(in_clinvar)) %>% 
+  filter(population=="SAS"| population=="NFE") %>% 
+  select(unreported, in_clinvar) %>% 
+  fisher.test()
+```
+
+Allele count range 
+```{r}
+gnomadv4_range_total <- gnomadv4_count %>% mutate(range = case_when(count_range=="0-1" ~ "1 allele", count_range=="2-3" ~ "1+ alleles", count_range=="4-10" ~ "1+ alleles", count_range=="11-100" ~ "1+ alleles", count_range=="100+" ~ "1+ alleles")) %>% group_by(gene) %>% 
+  count(range) %>% rename("total"="n")
+
+gnomadv4_fisher_range <- gnomadv4_count %>% 
+  mutate(range_count = case_when(count_range=="0-1" ~ "1 allele", count_range=="2-3" ~ "1+ alleles", count_range=="4-10" ~ "1+ alleles", count_range=="11-100" ~ "1+ alleles", count_range=="100+" ~ "1+ alleles")) %>% 
+  unite(test, gene, range_count, sep = "_") %>% 
+  group_by(test) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(test) %>% 
+  filter(!grepl("unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  separate(test, into = c("gene", "range"), sep = "_") %>% 
+  full_join(gnomadv4_range_total) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2),
+         unreported = (total-in_clinvar))
+
+gnomadv4fisher_range <- function(x){gnomadv4_fisher_range %>% filter(gene==x) %>% select(unreported, in_clinvar) %>% fisher.test()}
+
+gnomadv4fisher_range("ATM")
+gnomadv4fisher_range("BARD1")
+gnomadv4fisher_range("BRCA1")
+gnomadv4fisher_range("BRCA2")
+gnomadv4fisher_range("CHEK2")
+gnomadv4fisher_range("PALB2")
+gnomadv4fisher_range("RAD51C")
+gnomadv4fisher_range("RAD51D")
+gnomadv4fisher_range("TP53")
+```
+
+Fig 1D breakdown
+```{r}
+gnomadv4_count %>% filter(clin_var_clinical_significance=="Unreported") %>% count(vep_annotation) %>% mutate(percent = round((n/sum(n))*100,2))
+```
+
+Number of unreported variants that are population-private
+```{r}
+gnomadv4_count %>% 
+  filter(clin_var_clinical_significance=="Unreported") %>% 
+  group_by(gene) %>% 
+  count(population) %>% 
+  pivot_wider(names_from = population, values_from = n) %>% 
+  write.csv(here("output/v4/csv files/unreported_number.csv"))
+```
+
