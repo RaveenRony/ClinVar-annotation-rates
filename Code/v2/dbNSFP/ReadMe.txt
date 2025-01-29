@@ -1,1 +1,2 @@
-
+The file contains the code used to analyse outputs from dbNSFP. Missense variants, formatted as "chromosome number-location-reference-alternate," were uploaded in chunks. Variants that were not scored in the initial annotation round were reprocessed individually until only those unannotated by the dbNSFP database remained.
+The final output was filtered to remove duplicate variants. Violin plots were generated to visualize the rank scores for each gene, while bar graphs illustrated the number of prediction algorithms classifying variants as pathogenic.
