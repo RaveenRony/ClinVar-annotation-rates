@@ -1,1 +1,2 @@
-
+The file contains the code used to analyse outputs from dbNSFP. All variants, formatted as "chromosome number-location-reference-alternate," were uploaded in chunks and were annotated by dbNSFP, and only variants that dbNSFP was unable to annotate remained.
+The final output was filtered to remove duplicate variants. Violin plots were generated to visualize the rank scores for each gene, while bar graphs illustrated the number of prediction algorithms classifying variants as pathogenic, and these graphs were separated between each ClinVar annotation.
