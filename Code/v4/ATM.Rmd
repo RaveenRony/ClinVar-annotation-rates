@@ -1,4 +1,4 @@
-gnomAD v4 - ATM - Population specific variant table & Comparison of unique and shared variants within population
+gnomAD v4 - ATM - Population-private variant table & Comparison of unique and shared variants within population
 Packages used
 ```{r}
 library(tidyverse)
@@ -22,7 +22,7 @@ Inframe <- c("inframe_deletion", "inframe_insertion")
 Stop <- c("stop_gained", "stop_lost")
 ```
 
-AFR distribution
+Distribution of variant type over variants in ClinVar that are population-private to African population.
 ```{r}
 ATMv4 %>% 
   replace_na(list("allele_count_amish" = 0)) %>% 
@@ -46,7 +46,7 @@ ATMv4 %>%
   add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain), Unreported=sum(.$Unreported), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
 ```
 
-AMR distribution
+Distribution of variant type over variants in ClinVar that are population-private to Admixed American population.
 ```{r}
 ATMv4 %>% 
   replace_na(list("allele_count_amish" = 0)) %>% 
@@ -70,7 +70,7 @@ ATMv4 %>%
   add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain), Unreported=sum(.$Unreported), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
 ```
 
-NFE distribution
+Distribution of variant type over variants in ClinVar that are population-private to Non-Finnish European.
 ```{r}
 ATMv4 %>% 
   replace_na(list("allele_count_amish" = 0)) %>% 
@@ -93,7 +93,7 @@ ATMv4 %>%
   add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain), Unreported=sum(.$Unreported), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
 ```
 
-EAS distribution
+Distribution of variant type over variants in ClinVar that are population-private to East Asian population.
 ```{r}
 ATMv4 %>% 
   replace_na(list("allele_count_amish" = 0)) %>% 
@@ -117,7 +117,7 @@ ATMv4 %>%
   add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain), Unreported=sum(.$Unreported), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
 ```
 
-SAS distribution
+Distribution of variant type over variants in ClinVar that are population-private to South Asian population.
 ```{r}
 ATMv4 %>% 
   replace_na(list("allele_count_amish" = 0)) %>% 
@@ -142,7 +142,7 @@ ATMv4 %>%
   add_row(vep_annotation="All",Total = sum(.$Total), In_ClinVar = sum(.$In_ClinVar), "Pathogenic/Likely Pathogenic" = sum(.$"Pathogenic/Likely Pathogenic"), "Benign/Likely Benign"=sum(.$"Benign/Likely Benign"), Uncertain=sum(.$Uncertain), Unreported=sum(.$Unreported), "% in ClinVar"=round((In_ClinVar/Total)*100,2), "% Uncertain"=round((Uncertain/In_ClinVar)*100,2))
 ```
 
-ATM comparison of variants between population
+Comparison of the number of variants that were population-private to shared among the five populations.
 ```{r}
 ATMv4 %>% 
   filter(allele_count_african_african_american!=0) %>% 
