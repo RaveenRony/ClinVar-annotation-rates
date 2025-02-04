@@ -1,0 +1,4 @@
+This folder contains the input given to dbNSFP and output for each file from dbNSFP.
+Input files were made using code in dbNSFP.Rmd. Each file was separated based on their gene and ClinVar annotation. For example, the variants in ATM gene would be separated into 4 files, atm_ben (containing benign variants), atm_path (containing pathogenic variants), atm_blank (containing unreported variants) and atm_vus (containing uncertain variants). This was done for each gene.
+Algorithms selected for the results recieved were 1. Basic Information, 2. HGVSc/HGVSp presentation, 3. Transcript annotation, 4. Codon annotation, 5. SIFT, 6. Polyphen2, 7. MutationAssessor, 8. FATHMM, 9. VEST4, 10. MetaSVM/MetaLR, 11. REVEL, 12. CADD, 13. GERP++, 14. AlphaMissense.
+Output folder contains the results collected when the variants were inputted into dbNSFP.
