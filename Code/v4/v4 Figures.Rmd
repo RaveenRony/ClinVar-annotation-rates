@@ -37,6 +37,82 @@ Inframe <- c("inframe_deletion", "inframe_insertion")
 Stop <- c("stop_gained", "stop_lost")
 ```
 
+Loading of gene data from gnomAD v2
+```{r}
+ATM <- clean_names(read.csv(here("data/ATM.csv"))) %>% mutate(gene = "ATM",.before = chromosome)
+BARD1 <- clean_names(read.csv(here("data/BARD1.csv"))) %>% mutate(gene = "BARD1",.before = chromosome)
+BRCA1 <- clean_names(read.csv(here("data/BRCA1.csv"))) %>% mutate(gene = "BRCA1",.before = chromosome)
+BRCA2 <- clean_names(read.csv(here("data/BRCA2.csv"))) %>% mutate(gene = "BRCA2",.before = chromosome)
+CHEK2 <- clean_names(read.csv(here("data/CHEK2.csv"))) %>% mutate(gene = "CHEK2",.before = chromosome)
+PALB2 <- clean_names(read.csv(here("data/PALB2.csv"))) %>% mutate(gene = "PALB2",.before = chromosome)
+RAD51C <- clean_names(read.csv(here("data/RAD51C.csv"))) %>% mutate(gene = "RAD51C",.before = chromosome)
+RAD51D <- clean_names(read.csv(here("data/RAD51D.csv"))) %>% mutate(gene = "RAD51D",.before = chromosome)
+TP53 <- clean_names(read.csv(here("data/TP53.csv"))) %>% mutate(gene = "TP53",.before = chromosome)
+
+Pathogenic <- c("Pathogenic", "Pathogenic/Likely pathogenic", "Likely pathogenic")
+Benign <- c("Benign", "Benign/Likely benign", "Likely benign")
+Uncertain <- c("Uncertain significance", "Conflicting interpretations of pathogenicity", "Conflicting interpretations of pathogenicity; risk factor")
+Splice <- c("splice_donor_variant", "splice_acceptor_variant")
+Inframe <- c("inframe_deletion", "inframe_insertion")
+Stop <- c("stop_gained", "stop_lost")
+
+gnomad <- full_join(ATM, BARD1) %>% full_join(BRCA1) %>% full_join(BRCA2) %>% full_join(CHEK2) %>% full_join(PALB2) %>% full_join(RAD51C) %>% full_join(RAD51D) %>% full_join(TP53)
+
+gnomad_afr <- gnomad %>% 
+  filter(allele_count_african_african_american!=0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+  mutate(population = "AFR",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomad_amr <- gnomad %>% 
+  filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american!=0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+  mutate(population = "AMR",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomad_nfe <- gnomad %>% 
+  filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish!=0 , allele_count_south_asian==0) %>% 
+  mutate(population = "NFE",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomad_eas <- gnomad %>% 
+  filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian!=0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian==0) %>% 
+  mutate(population = "EAS",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomad_sas <- gnomad %>% 
+  filter(allele_count_african_african_american==0 & allele_count_other==0 & allele_count_latino_admixed_american==0 & allele_count_ashkenazi_jewish==0 & allele_count_east_asian==0 & allele_count_european_finnish==0 & allele_count_european_non_finnish==0 , allele_count_south_asian!=0) %>% 
+  mutate(population = "SAS",.after = position,
+         clin_var_clinical_significance = case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", clin_var_clinical_significance %in% Uncertain ~ "Uncertain", clin_var_clinical_significance %in% Benign ~ "Benign", clin_var_clinical_significance=="not provided" ~ "Unreported", clin_var_clinical_significance=="" ~ "Unreported", TRUE~clin_var_clinical_significance),
+         vep_annotation=case_when(vep_annotation %in% Splice ~ "splice_site_variant", vep_annotation %in% Inframe ~ "inframe_variant", TRUE ~ vep_annotation)) %>% 
+  mutate(count_range = ifelse(allele_count <= 1, "0-1",
+                              ifelse(allele_count >= 2 & allele_count <= 3, "2-3",
+                                     ifelse(allele_count >= 4 & allele_count <= 10, "4-10",
+                                            ifelse(allele_count >= 11 & allele_count <= 100, "11-100", "100+")))), .after=allele_count)
+
+gnomad_count <-  full_join(gnomad_afr, gnomad_amr) %>% full_join(gnomad_nfe) %>% full_join(gnomad_eas) %>% full_join(gnomad_sas)
+
+gnomad_total <- gnomad_count %>% group_by(gene) %>% count(population) %>% rename("total"="n")
+```
+
 Population and gene distribution of all variants and pathogenic variants
 ```{r}
 gnomadv4_total <- gnomadv4_count %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
@@ -170,33 +246,20 @@ gnomadv4_count %>%
   labs(x="Population", y = "Percentage of variants")
 ggsave(here("output/v4/fig1F.png"), height = 6, width = 8, dpi = 300)
 
-gnomad_count %>%
-  mutate(Population = case_when(Population == "African_american" ~ "AFR",
-                                Population == "Latino_admixed_american" ~ "AMR",
-                                Population == "Non_finnish_european" ~ "NFE", 
-                                Population == "East_asian" ~ "EAS",
-                                Population == "South_asian" ~ "SAS"),
-         gene = case_when(gene == "atm" ~ "ATM",
-                          gene == "bard1" ~ "BARD1",
-                          gene == "brca1" ~ "BRCA1",
-                          gene == "brca2" ~ "BRCA2",
-                          gene == "chek2" ~ "CHEK2",
-                          gene == "palb2" ~ "PALB2",
-                          gene == "rad51c" ~ "RAD51C",
-                          gene == "rad51d" ~ "RAD51D",
-                          gene == "tp53" ~ "TP53")) %>% 
-  unite(test, gene, Population, sep=" ") %>% 
+gnomad_count %>% 
+  unite(test, gene, population, sep=" ") %>% 
   group_by(test) %>%
   count(clin_var_clinical_significance) %>%
   ungroup() %>%
   complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
   group_by(test) %>% 
-  filter(!grepl("Blank", clin_var_clinical_significance, ignore.case = TRUE)) %>%
+  filter(!grepl("Unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>%
   summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
-  separate(test, into = c("gene", "Population"), sep = " ") %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
   full_join(gnomad_total) %>% 
   mutate(v2 = round((in_clinvar/total)*100,2)) %>% 
-  select(gene, Population, v2) %>% 
+  select(gene, population, v2) %>% 
+  rename("Population" = "population") %>% 
   full_join(gnomadv4_inclinvar) %>% 
   pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage") %>% 
   ggplot(aes(x=Population, y=Percentage, shape=Population)) +
@@ -559,23 +622,6 @@ ggsave(here("output/v4/ranks/all/fathmm_rankscore.png"), width = 8, height = 6, 
 
 Comparison of v2 and v4
 ```{r}
-gnomad_total <- gnomad_count %>% 
-  mutate(Population = case_when(Population == "African_american" ~ "AFR",
-                                Population == "Latino_admixed_american" ~ "AMR",
-                                Population == "Non_finnish_european" ~ "NFE", 
-                                Population == "East_asian" ~ "EAS",
-                                Population == "South_asian" ~ "SAS"),
-         gene = case_when(gene == "atm" ~ "ATM",
-                          gene == "bard1" ~ "BARD1",
-                          gene == "brca1" ~ "BRCA1",
-                          gene == "brca2" ~ "BRCA2",
-                          gene == "chek2" ~ "CHEK2",
-                          gene == "palb2" ~ "PALB2",
-                          gene == "rad51c" ~ "RAD51C",
-                          gene == "rad51d" ~ "RAD51D",
-                          gene == "tp53" ~ "TP53")) %>% 
-  group_by(gene) %>% count(Population) %>% rename("total" = "n")
-
 gnomadv4_inclinvar <- gnomadv4_count %>%
   unite(test, gene, population, sep=" ") %>% 
   group_by(test) %>%
@@ -591,33 +637,20 @@ gnomadv4_inclinvar <- gnomadv4_count %>%
   rename("Population" = "population") %>% 
   select(gene, Population, v4)
 
-gnomad_count %>%
-  mutate(Population = case_when(Population == "African_american" ~ "AFR",
-                                Population == "Latino_admixed_american" ~ "AMR",
-                                Population == "Non_finnish_european" ~ "NFE", 
-                                Population == "East_asian" ~ "EAS",
-                                Population == "South_asian" ~ "SAS"),
-         gene = case_when(gene == "atm" ~ "ATM",
-                          gene == "bard1" ~ "BARD1",
-                          gene == "brca1" ~ "BRCA1",
-                          gene == "brca2" ~ "BRCA2",
-                          gene == "chek2" ~ "CHEK2",
-                          gene == "palb2" ~ "PALB2",
-                          gene == "rad51c" ~ "RAD51C",
-                          gene == "rad51d" ~ "RAD51D",
-                          gene == "tp53" ~ "TP53")) %>% 
-  unite(test, gene, Population, sep=" ") %>% 
+gnomad_count %>% 
+  unite(test, gene, population, sep=" ") %>% 
   group_by(test) %>%
   count(clin_var_clinical_significance) %>%
   ungroup() %>%
   complete(test, clin_var_clinical_significance, fill = list(n = 0)) %>% 
   group_by(test) %>% 
-  filter(!grepl("Blank", clin_var_clinical_significance, ignore.case = TRUE)) %>%
+  filter(!grepl("Unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>%
   summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
-  separate(test, into = c("gene", "Population"), sep = " ") %>% 
+  separate(test, into = c("gene", "population"), sep = " ") %>% 
   full_join(gnomad_total) %>% 
   mutate(v2 = round((in_clinvar/total)*100,2)) %>% 
-  select(gene, Population, v2) %>% 
+  select(gene, population, v2) %>% 
+  rename("Population" = "population") %>% 
   full_join(gnomadv4_inclinvar) %>% 
   pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage") %>% 
   ggplot(aes(x=Population, y=Percentage, shape=Population)) +
@@ -625,10 +658,10 @@ gnomad_count %>%
   geom_point(size = 2.5) + geom_line(aes(group = Version, color=Version), linetype = 2, size = 0.7) +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
-        axis.title.x = element_text(size = 15),
-        axis.title.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
         axis.text.y = element_text(size = 15),
-        legend.title = element_text(size = 15),
+        legend.title = element_text(size = 18),
         legend.text = element_text(size = 15)) + 
   ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS")
 ggsave(here("output/v4/fig2A.png"), width = 8, height = 6, dpi = 300)
@@ -640,23 +673,9 @@ comparison_count <- gnomadv4_count %>%
                       rename(v4=n)
 
 gnomad_count %>% 
-  mutate(Pop = case_when(Population == "African_american" ~ "AFR", 
-                         Population == "Latino_admixed_american" ~ "AMR",
-                         Population == "Non_finnish_european" ~ "NFE", 
-                         Population == "East_asian" ~ "EAS", 
-                         Population == "South_asian" ~ "SAS"),.after = Population) %>% 
-  mutate(gene = case_when(gene == "atm" ~ "ATM",
-                          gene == "bard1" ~ "BARD1",
-                          gene == "brca1" ~ "BRCA1",
-                          gene == "brca2" ~ "BRCA2",
-                          gene == "chek2" ~ "CHEK2",
-                          gene == "palb2" ~ "PALB2",
-                          gene == "rad51c" ~ "RAD51C",
-                          gene == "rad51d" ~ "RAD51D",
-                          gene == "tp53" ~ "TP53")) %>% 
   group_by(gene) %>% 
-  count(Pop) %>%
-  rename(population=Pop, v2 = n) %>% 
+  count(population) %>%
+  rename(v2 = n) %>% 
   full_join(comparison_count) %>% 
   pivot_longer(cols = c("v2", "v4"), names_to = "version", values_to = "count") %>% 
   ggplot(aes(x= population, y = count, fill = gene)) + geom_col(position = "dodge") + facet_wrap(~version) +
