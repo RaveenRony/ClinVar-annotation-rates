@@ -1,0 +1,2 @@
+The file contains the code used to analyse the FLOSSIES data downloaded on 30th April 2024. 
+Since FLOSSIES data is on the GRCh37 build, the variants were convereted into hgvs.g format to join the data from FLOSSIES to GnomAD. Then figures and tables for the proportion of variants in FLOSSIES that were in GnomAD was taken. The distribution of variants amongst each population and variants with Unreported ClinVar annotation was taken.
