@@ -264,7 +264,7 @@ gnomad_count %>%
   pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage") %>% 
   ggplot(aes(x=Population, y=Percentage, shape=Population)) +
   facet_wrap(~gene) +
-  geom_point(size = 2.5) + geom_line(aes(group = Version, color=Version), linetype = 2, size = 0.7) +
+  geom_point(size = 2.5) + geom_line(aes(group = Version, colour=Version), linetype = 2, size = 0.7) +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
         axis.title.x = element_text(size = 20),
@@ -291,7 +291,7 @@ gnomadv4_count %>%
   full_join(gnomadv4_combine_total) %>% 
   mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
   ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
-  geom_line(aes(group = gene), color = "black", linetype = 2, size = 0.6) +
+  geom_line(aes(group = gene), colour = "black", linetype = 2, size = 0.6) +
   facet_wrap(~gene) +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
@@ -384,6 +384,156 @@ pca_v4_gnomad <- ggplot(pca_gnomadv4_modified_rank, aes(x = V2, y = V3, colour =
 
 ggMarginal(pca_v4_gnomad, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/fig3D.png"), width = 8, height = 6, dpi = 300)
+```
+
+Singleton data analysis
+```{r}
+singletons_unr <- function(df) {df %>% filter(clin_var_clinical_significance == "Unreported") %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
+
+singleton_data <- gnomadv4_count %>% 
+  unite(gene_pop, gene, population) %>% 
+  nest(data = -gene_pop) %>% 
+  mutate(number = map_dbl(data, singletons_unr)) %>% 
+  select(gene_pop, number) %>% 
+  separate(gene_pop, into = c("gene", "population")) 
+
+singleton_data %>% 
+  pivot_wider(names_from = population, values_from = number) %>% 
+  write.csv(here("output/v4/csv files/singletons.csv"), row.names = F) #Number of unreported variants with allele counts 2-5 in each gene and population
+
+singleton_data %>% 
+  ggplot(aes(x= population, y = number, fill = gene)) + geom_col(colour = "#000000") + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank(),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        legend.text = element_text(size = 15)) +
+  scale_fill_manual(values = c("ATM" = "darkgreen",
+                               "BARD1" = "violet",
+                               "BRCA1" = "darkred",
+                               "BRCA2" = "maroon",
+                               "CHEK2" = "skyblue",
+                               "PALB2" = "lightyellow",
+                               "RAD51C" = "darkorange",
+                               "RAD51D" = "orange",
+                               "TP53" = "#ffcccc")) +
+  scale_y_continuous(breaks = seq(0, 500, by = 50)) + 
+  xlim("NFE", "AFR","AMR", "EAS", "SAS") +
+  labs(x="Population")
+ggsave(here("output/v4/singleton_unreported_1B.png"), dpi=300, width=8, height=6) #Total number of unreported variants per gene and per population which have an allele count of 2-5
+
+singleton_all <- function(df) {df %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
+
+singleton_all_data <- gnomadv4_count %>% 
+  unite(gene_pop, gene, population) %>% 
+  nest(data = -gene_pop) %>% 
+  mutate(number = map_dbl(data, singleton_all)) %>% 
+  select(gene_pop, number) %>% 
+  separate(gene_pop, into = c("gene", "population")) 
+
+singleton_all_data %>% 
+  pivot_wider(names_from = population, values_from = number) %>% 
+  write.csv(here("output/v4/csv files/singletons_all_data.csv"), row.names = F) #Number of all variants with allele counts 2-5 in each gene and population
+
+singleton_all_data %>% 
+  ggplot(aes(x= population, y = number, fill = gene)) + geom_col(colour = "#000000") + 
+  theme_bw() +
+  theme(axis.title.y = element_blank(),
+        legend.title = element_blank(),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        legend.text = element_text(size = 15)) +
+  scale_fill_manual(values = c("ATM" = "darkgreen",
+                               "BARD1" = "violet",
+                               "BRCA1" = "darkred",
+                               "BRCA2" = "maroon",
+                               "CHEK2" = "skyblue",
+                               "PALB2" = "lightyellow",
+                               "RAD51C" = "darkorange",
+                               "RAD51D" = "orange",
+                               "TP53" = "#ffcccc")) +
+  scale_y_continuous(breaks = seq(0, 2500, by = 500)) + 
+  ylim(0,2500) +
+  xlim("NFE", "AFR","AMR", "EAS", "SAS") +
+  labs(x="Population")
+ggsave(here("output/v4/singleton_all_1B.png"), dpi=300, width=8, height=6) #Total number of all variants per gene and per population which have an allele count of 2-5
+
+gnomadv4_count %>% 
+  filter(allele_count %in% c(2, 3, 4, 5)) %>% 
+  group_by(population) %>% 
+  count(clin_var_clinical_significance) %>% 
+  mutate(percent = round((n/sum(n))*100,2)) %>% 
+  ggplot(aes(x=population, y=percent, fill=clin_var_clinical_significance)) + 
+  geom_col(colour="black") + 
+  scale_fill_manual(values = c("Benign" = "skyblue", 
+                                 "Pathogenic" = "red", 
+                                 "Unreported" = "darkgray", 
+                                 "Uncertain" = "darkgreen")) +
+  theme_bw() + 
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.text = element_text(size = 15),
+        legend.title = element_blank()) +
+  xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x="Population", y = "Percentage of variants")
+ggsave(here("output/v4/singleton_all_1F.png"), height = 6, width = 8, dpi = 300)#Percentage of all variants which have an allele count of 2-5 in each ClinVar annotations per population.
+
+gnomadv4_unr_total <- gnomadv4_count %>% filter(clin_var_clinical_significance == "Unreported") %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_count %>%
+  filter(clin_var_clinical_significance == "Unreported") %>% 
+  filter(allele_count %in% c(2, 3, 4, 5)) %>%
+  count(population) %>% 
+  full_join(gnomadv4_unr_total) %>% 
+  replace_na(list(n = 0)) %>% 
+  mutate(percent = round((n/total)*100,2),
+         gene = "All") %>% 
+  ggplot(aes(x=population,y=percent, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), colour = "black", linetype = 2, size = 0.6) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(0, 20) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", y = "Percentage", shape = "Population")
+ggsave(here("output/v4/percent_of_unreported_2-5_variants.png"), width = 8, height = 6, dpi = 300) #Line graph depicting percentage of unreported variants that has allele count 2-5
+
+gnomadv4_singleton_total <- gnomadv4_count %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(population) %>% rename("total" = "n")
+
+gnomadv4_count %>%
+  filter(allele_count %in% c(2, 3, 4, 5)) %>%
+  group_by(population) %>% 
+  count(clin_var_clinical_significance) %>% 
+  ungroup() %>% 
+  complete(population, clin_var_clinical_significance, fill = list(n = 0)) %>% 
+  group_by(population) %>% 
+  filter(!grepl("Unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
+  summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
+  full_join(gnomadv4_singleton_total) %>% 
+  mutate(percent = round((in_clinvar/total)*100,2),
+         gene = "All") %>% 
+  ggplot(aes(x=population,y=percent, shape=population)) + geom_point(size = 2.5) + 
+  geom_line(aes(group = gene), colour = "black", linetype = 2, size = 0.6) +
+  theme_bw() + 
+  theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        axis.text.y = element_text(size = 15),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 15),
+        strip.text = element_text(size = 10.5)) + 
+  ylim(50, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  labs(x = "Population", y = "Percentage", shape = "Population")
+ggsave(here("output/v4/percent_of_2-5_variants_in_clinvar.png"), width = 8, height = 6, dpi = 300) #Line graph depicting percentage of variants that has allele count 2-5 in ClinVar
 ```
 
 Supplementary figures of rankscores
@@ -655,7 +805,7 @@ gnomad_count %>%
   pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage") %>% 
   ggplot(aes(x=Population, y=Percentage, shape=Population)) +
   facet_wrap(~gene) +
-  geom_point(size = 2.5) + geom_line(aes(group = Version, color=Version), linetype = 2, size = 0.7) +
+  geom_point(size = 2.5) + geom_line(aes(group = Version, colour=Version), linetype = 2, size = 0.7) +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
         axis.title.x = element_text(size = 20),
