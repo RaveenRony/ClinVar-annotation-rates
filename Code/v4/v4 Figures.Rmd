@@ -374,34 +374,36 @@ pca_v4_gnomad <- ggplot(pca_gnomadv4_modified_rank, aes(x = V2, y = V3, colour =
         axis.text.x = element_text(size = 15),
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
         legend.text = element_text(size = 15),
-        legend.title = element_blank()) +
+        legend.position = "top") +
   geom_point() +
   geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
   geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
   geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2)
+  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 
 ggMarginal(pca_v4_gnomad, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/fig3D.png"), width = 8, height = 6, dpi = 300)
 ```
 
-Singleton data analysis
+Variants with very low frequency analysis
 ```{r}
-singletons_unr <- function(df) {df %>% filter(clin_var_clinical_significance == "Unreported") %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
+var_vlow_unr <- function(df) {df %>% filter(clin_var_clinical_significance == "Unreported") %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
 
-singleton_data <- gnomadv4_count %>% 
+var_vlow_data <- gnomadv4_count %>% 
   unite(gene_pop, gene, population) %>% 
   nest(data = -gene_pop) %>% 
-  mutate(number = map_dbl(data, singletons_unr)) %>% 
+  mutate(number = map_dbl(data, var_vlow_unr)) %>% 
   select(gene_pop, number) %>% 
   separate(gene_pop, into = c("gene", "population")) 
 
 singleton_data %>% 
   pivot_wider(names_from = population, values_from = number) %>% 
-  write.csv(here("output/v4/csv files/singletons.csv"), row.names = F) #Number of unreported variants with allele counts 2-5 in each gene and population
+  write.csv(here("output/v4/csv files/var_vlow_unreported.csv"), row.names = F) #Number of unreported variants with allele counts 2-5 in each gene and population
 
-singleton_data %>% 
+var_vlow_data %>% 
   ggplot(aes(x= population, y = number, fill = gene)) + geom_col(colour = "#000000") + 
   theme_bw() +
   theme(axis.title.y = element_blank(),
@@ -422,22 +424,22 @@ singleton_data %>%
   scale_y_continuous(breaks = seq(0, 500, by = 50)) + 
   xlim("NFE", "AFR","AMR", "EAS", "SAS") +
   labs(x="Population")
-ggsave(here("output/v4/singleton_unreported_1B.png"), dpi=300, width=8, height=6) #Total number of unreported variants per gene and per population which have an allele count of 2-5
+ggsave(here("output/v4/var_vlow_unreported_1B.png"), dpi=300, width=8, height=6) #Total number of unreported variants per gene and per population which have an allele count of 2-5
 
-singleton_all <- function(df) {df %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
+var_vlow_all <- function(df) {df %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(gnom_ad_id) %>% nrow()}
 
-singleton_all_data <- gnomadv4_count %>% 
+var_vlow_all_data <- gnomadv4_count %>% 
   unite(gene_pop, gene, population) %>% 
   nest(data = -gene_pop) %>% 
-  mutate(number = map_dbl(data, singleton_all)) %>% 
+  mutate(number = map_dbl(data, var_vlow_all)) %>% 
   select(gene_pop, number) %>% 
   separate(gene_pop, into = c("gene", "population")) 
 
-singleton_all_data %>% 
+var_vlow_all_data %>% 
   pivot_wider(names_from = population, values_from = number) %>% 
-  write.csv(here("output/v4/csv files/singletons_all_data.csv"), row.names = F) #Number of all variants with allele counts 2-5 in each gene and population
+  write.csv(here("output/v4/csv files/var_vlow_all_data.csv"), row.names = F) #Number of all variants with allele counts 2-5 in each gene and population
 
-singleton_all_data %>% 
+var_vlow_all_data %>% 
   ggplot(aes(x= population, y = number, fill = gene)) + geom_col(colour = "#000000") + 
   theme_bw() +
   theme(axis.title.y = element_blank(),
@@ -459,7 +461,7 @@ singleton_all_data %>%
   ylim(0,2500) +
   xlim("NFE", "AFR","AMR", "EAS", "SAS") +
   labs(x="Population")
-ggsave(here("output/v4/singleton_all_1B.png"), dpi=300, width=8, height=6) #Total number of all variants per gene and per population which have an allele count of 2-5
+ggsave(here("output/v4/var_vlow_all_1B.png"), dpi=300, width=8, height=6) #Total number of all variants per gene and per population which have an allele count of 2-5
 
 gnomadv4_count %>% 
   filter(allele_count %in% c(2, 3, 4, 5)) %>% 
@@ -481,7 +483,7 @@ gnomadv4_count %>%
         legend.title = element_blank()) +
   xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
   labs(x="Population", y = "Percentage of variants")
-ggsave(here("output/v4/singleton_all_1F.png"), height = 6, width = 8, dpi = 300)#Percentage of all variants which have an allele count of 2-5 in each ClinVar annotations per population.
+ggsave(here("output/v4/var_vlow_all_1F.png"), height = 6, width = 8, dpi = 300)#Percentage of all variants which have an allele count of 2-5 in each ClinVar annotations per population.
 
 gnomadv4_unr_total <- gnomadv4_count %>% filter(clin_var_clinical_significance == "Unreported") %>% count(population) %>% rename("total" = "n")
 
@@ -507,7 +509,7 @@ gnomadv4_count %>%
   labs(x = "Population", y = "Percentage", shape = "Population")
 ggsave(here("output/v4/percent_of_unreported_2-5_variants.png"), width = 8, height = 6, dpi = 300) #Line graph depicting percentage of unreported variants that has allele count 2-5
 
-gnomadv4_singleton_total <- gnomadv4_count %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(population) %>% rename("total" = "n")
+gnomadv4_var_vlow_total <- gnomadv4_count %>% filter(allele_count %in% c(2, 3, 4, 5)) %>% count(population) %>% rename("total" = "n")
 
 gnomadv4_count %>%
   filter(allele_count %in% c(2, 3, 4, 5)) %>%
@@ -518,7 +520,7 @@ gnomadv4_count %>%
   group_by(population) %>% 
   filter(!grepl("Unreported", clin_var_clinical_significance, ignore.case = TRUE)) %>% 
   summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
-  full_join(gnomadv4_singleton_total) %>% 
+  full_join(gnomadv4_var_vlow_total) %>% 
   mutate(percent = round((in_clinvar/total)*100,2),
          gene = "All") %>% 
   ggplot(aes(x=population,y=percent, shape=population)) + geom_point(size = 2.5) + 
