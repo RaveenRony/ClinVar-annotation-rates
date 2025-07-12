@@ -246,7 +246,7 @@ gnomadv4_count %>%
   labs(x="Population", y = "Percentage of variants")
 ggsave(here("output/v4/fig1F.png"), height = 6, width = 8, dpi = 300)
 
-gnomad_count %>% 
+fig2A_data <- gnomad_count %>% 
   unite(test, gene, population, sep=" ") %>% 
   group_by(test) %>%
   count(clin_var_clinical_significance) %>%
@@ -261,10 +261,29 @@ gnomad_count %>%
   select(gene, population, v2) %>% 
   rename("Population" = "population") %>% 
   full_join(gnomadv4_inclinvar) %>% 
-  pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage") %>% 
-  ggplot(aes(x=Population, y=Percentage, shape=Population)) +
+  pivot_longer(cols = c("v2", "v4"), names_to = "Version", values_to = "Percentage")
+
+fig2A_bonferroi_annot <- fig2A_data %>% 
+  filter(Version == "v4") %>% 
+  unite(test, gene, Population) %>% 
+  filter(test %in% c("ATM_AFR", "BRCA1_AMR", "BRCA2_AMR", "TP53_EAS", "ATM_SAS", "BRCA2_SAS", "PALB2_SAS")) %>% 
+  separate(test, into = c("gene", "Population"))
+
+fig2A_nominal_annot <- fig2A_data %>% 
+  filter(Version == "v4") %>% 
+  unite(test, gene, Population) %>% 
+  filter(test %in% c("BRCA1_AFR", "BRCA2_AFR","PALB2_AFR", "RAD51C_AMR", "BARD1_SAS", "BRCA1_SAS", "CHEK2_SAS", "TP53_SAS")) %>% 
+  separate(test, into = c("gene", "Population"))
+
+fig2A_data %>% 
+  ggplot(aes(x=Population, y=Percentage)) +
   facet_wrap(~gene) +
-  geom_point(size = 2.5) + geom_line(aes(group = Version, colour=Version), linetype = 2, size = 0.7) +
+  geom_point(aes(shape=Population), size = 2.5) + 
+  geom_line(aes(group = Version, colour = Version), linetype = 2, size = 0.7) +
+  geom_text(data = fig2A_bonferroi_annot, aes(x = Population, y = Percentage, label = "*", colour = Version), vjust = 2, size = 6, inherit.aes = F, show.legend = F) +
+  geom_text(data = fig2A_nominal_annot, aes(x = Population, y = Percentage, label = "○", colour = Version), vjust = 2, size = 6, inherit.aes = F, show.legend = F) +
+  geom_point(data = fig2A_bonferroi_annot, aes(fill = "Adjusted"), colour = "transparent") +
+  geom_point(data = fig2A_nominal_annot, aes(fill = "Nominal"), colour = "transparent") +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
         axis.title.x = element_text(size = 20),
@@ -272,13 +291,16 @@ gnomad_count %>%
         axis.text.y = element_text(size = 15),
         legend.title = element_text(size = 18),
         legend.text = element_text(size = 15)) + 
+  guides(shape = guide_legend(title = "Population", order = 2),
+         colour = guide_legend(title = "Version", order = 1),
+         fill  = guide_legend(title = "Significance", order = 3, override.aes = list(shape = c(8, 1), size = 4, colour = c("turquoise3", "turquoise3")))) +
   ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS")
 ggsave(here("output/v4/fig2A.png"), width = 8, height = 6, dpi = 300)
 
-gnomadv4_combine_total <- gnomadv4_count %>% filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
+gnomadv4_combine_total <- gnomadv4_count %>% filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_gained") %>% group_by(gene) %>% count(population) %>% rename("total" = "n")
 
-gnomadv4_count %>%
-  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_lost") %>% 
+fig2B_data <- gnomadv4_count %>%
+  filter(vep_annotation=="frameshift_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_gained") %>% 
   unite(test, gene, population, sep = " ") %>% 
   group_by(test) %>% 
   count(clin_var_clinical_significance) %>% 
@@ -289,9 +311,18 @@ gnomadv4_count %>%
   summarise(in_clinvar = sum(n, na.rm = TRUE)) %>% 
   separate(test, into = c("gene", "population"), sep = " ") %>% 
   full_join(gnomadv4_combine_total) %>% 
-  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2)) %>% 
+  mutate(percent_in_clinvar = round((in_clinvar/total)*100,2))
+
+fig2B_nominal_annot <- fig2B_data %>%  
+  unite(test, gene, population) %>% 
+  filter(test %in% c("ATM_SAS", "BRCA2_SAS", "TP53_SAS")) %>% 
+  separate(test, into = c("gene", "population"))
+
+fig2B_data %>% 
   ggplot(aes(x=population,y=percent_in_clinvar, shape=population)) + geom_point(size = 2.5) + 
   geom_line(aes(group = gene), colour = "black", linetype = 2, size = 0.6) +
+  geom_text(data = fig2B_nominal_annot, aes(x = population, y = percent_in_clinvar, label = "○"), vjust = -0.8, size = 6, inherit.aes = FALSE) +
+  geom_point(data = fig2B_nominal_annot, aes(fill = "Nominal"), colour = "transparent") +
   facet_wrap(~gene) +
   theme_bw() + 
   theme(axis.text.x = element_text(size = 15, angle = 35, hjust = 1),
@@ -302,6 +333,8 @@ gnomadv4_count %>%
         legend.text = element_text(size = 15),
         strip.text = element_text(size = 10.5)) + 
   ylim(0, 100) + xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  guides(shape = guide_legend(title = "Population", order = 1),
+         fill  = guide_legend(title = "Significance", order = 2, override.aes = list(shape = 1, size = 4, colour = "black"))) +
   labs(x = "Population", y = "Percentage", shape = "Population")
 ggsave(here("output/v4/fig2B.png"), width = 8, height = 6, dpi = 300)
 
@@ -770,6 +803,151 @@ dbnsfp_v4gnomad %>%
         strip.text = element_text(size = 10.5)) +
   labs(x="ClinVar Clinical Significance", y = "FATHMM Rankscore")
 ggsave(here("output/v4/ranks/all/fathmm_rankscore.png"), width = 8, height = 6, dpi = 300)
+```
+
+PCA for all populations
+```{r}
+pca_v4 %>% 
+  filter(vep_annotation=="missense_variant") %>% 
+  select(-c(chromosome, position, end, reference, alternate, vep_annotation, allele_count, count_range, hg38, hg19)) %>% 
+  mutate(clin_var_clinical_significance= case_when(clin_var_clinical_significance %in% Pathogenic ~ "Pathogenic", 
+                                 clin_var_clinical_significance %in% Uncertain ~ "Uncertain", 
+                                 clin_var_clinical_significance %in% Benign ~ "Benign", 
+                                 clin_var_clinical_significance=="not provided" ~ NA,
+                                 is.na(clin_var_clinical_significance) ~ "Unreported",
+                                 TRUE~clin_var_clinical_significance)) %>% 
+  unite(test, gene, hgvsg, clin_var_clinical_significance, population, sep = ", ") -> gnomadv4_population_assay
+
+transposed_gnomadv4_pop_assay <- as.data.frame(t(gnomadv4_population_assay))
+
+col_to_remv4 <- colSums(is.na(gnomadv4_population_assay))
+gnomadv4_pca_pop <- rbind(gnomadv4_population_assay, col_to_rem)
+
+col_tremv4<- colSums(is.na(transposed_gnomadv4_pop_assay))
+transposed_gnomadv4_pop_pca <- rbind(transposed_gnomadv4_pop_assay, col_tremv4)
+rownames_to_column(transposed_gnomadv4_pca, var = "rankscore")
+transposed_gnomadv4_pop_pca <- transposed_gnomadv4_pop_pca %>% select(which(.[35, ] == 0|.[35, ] == 1|.[35, ] == 4))
+transposed_gnomadv4_pop_pca <- transposed_gnomadv4_pop_pca[-35,]
+transposed_gnomadv4_pop_pca %>% write.table(file = here("data/PCA_pop_assay.txt"), row.names = F, col.names = F)
+
+gnomadv4_pop_pca <- read.table(here("data/PCA_pop_assay.txt"))
+colnames(gnomadv4_pop_pca) <- gnomadv4_pop_pca[1, ]
+gnomadv4_pop_pca <- gnomadv4_pop_pca[-1, ]
+gnomadv4_pop_pca[] <- lapply(gnomadv4_pop_pca, as.numeric)
+gnomadv4_pop_pca <- gnomadv4_pop_pca %>% drop_na()
+#9799/10164 missense variants having 24 rankscores
+
+pca_pop_result <- prcomp(gnomadv4_pop_pca, center = TRUE, scale. = TRUE)
+fviz_eig(pca_pop_result, addlabels = T)
+
+pca_pop_data <- as.data.frame(pca_pop_result[["rotation"]])
+pca_pop_data %>% write.table(here("data/PCA_pop.txt"), col.names = F)
+pca_pop_gnomadv4 <- read.table(here("data/PCA_pop.txt"))
+
+pca_pop_gnomadv4_modified_rank <- pca_pop_gnomadv4 %>%
+  separate(V1, c("gene", "variant", "clin_sig", "population"), sep = ", ") %>%
+  mutate(clin_sig = case_when(clin_sig == "NA" ~ "Unreported", clin_sig == "Not_annotated" ~ "Unreported", TRUE ~ clin_sig))
+
+pca_nfe <- pca_pop_gnomadv4_modified_rank %>% filter(population == "NFE")
+pca_afr <- pca_pop_gnomadv4_modified_rank %>% filter(population == "AFR")
+pca_amr <- pca_pop_gnomadv4_modified_rank %>% filter(population == "AMR")
+pca_eas <- pca_pop_gnomadv4_modified_rank %>% filter(population == "EAS")
+pca_sas <- pca_pop_gnomadv4_modified_rank %>% filter(population == "SAS")
+
+pca_nfe_plot <- ggplot(pca_nfe, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Principal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "top") +
+  geom_point() +
+  geom_point(data = filter(pca_nfe, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
+ggMarginal(pca_nfe_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/nfe-rankscores.png"), width = 8, height = 6, dpi = 300)
+
+pca_afr_plot <- ggplot(pca_afr, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Principal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "top") +
+  geom_point() +
+  geom_point(data = filter(pca_afr, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_afr, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_afr, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_afr, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
+ggMarginal(pca_afr_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/afr-rankscores.png"), width = 8, height = 6, dpi = 300)
+
+pca_amr_plot <- ggplot(pca_amr, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Principal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "top") +
+  geom_point() +
+  geom_point(data = filter(pca_amr, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_amr, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_amr, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_amr, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
+ggMarginal(pca_amr_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/amr-rankscores.png"), width = 8, height = 6, dpi = 300)
+
+pca_eas_plot <- ggplot(pca_eas, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Principal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "top") +
+  geom_point() +
+  geom_point(data = filter(pca_eas, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_eas, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_eas, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_eas, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
+ggMarginal(pca_eas_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/eas-rankscores.png"), width = 8, height = 6, dpi = 300)
+
+pca_sas_plot <- ggplot(pca_sas, aes(x = V2, y = V3, colour = clin_sig)) +
+  scale_colour_manual(values = c("Benign" = "skyblue", "Pathogenic" = "red", "Unreported" = "darkgray", "Uncertain" = "darkgreen")) + theme_bw() +
+  labs(x = "Principal Component 1", y = "Principal Component 2") +
+  theme(axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.position = "top") +
+  geom_point() +
+  geom_point(data = filter(pca_sas, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_sas, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_sas, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_sas, clin_sig=="Pathogenic"), size = 2) + 
+  guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
+ggMarginal(pca_sas_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
+ggsave(here("output/v4/PCA/sas-rankscores.png"), width = 8, height = 6, dpi = 300)
 ```
 
 Comparison of v2 and v4
@@ -1347,7 +1525,7 @@ gnomadv4_fisher %>%
   fisher.test()
 ```
 
-Fisher test for combination of Inframe, Frameshift, Splice Site and Stop Lost variants
+Fisher test for combination of Inframe, Frameshift, Splice Site and Stop Gained variants
 ```{r}
 gnomadv4_total_comb <- gnomadv4_count %>%
   filter(vep_annotation=="inframe_variant"|vep_annotation=="splice_site_variant"|vep_annotation=="stop_gained"|
