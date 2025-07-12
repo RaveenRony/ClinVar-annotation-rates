@@ -567,7 +567,7 @@ pca_tp53v4 %>%
 ggsave(here("output/v4/PCA/TP53.png"), width = 8, height = 6, dpi = 300)
 ```
 
-Population PCA
+Population specific PCA for missense variants
 ```{r}
 pca_v4 %>% 
   filter(vep_annotation=="missense_variant") %>% 
@@ -627,10 +627,10 @@ pca_nfe_plot <- ggplot(pca_nfe, aes(x = V2, y = V3, colour = clin_sig)) +
         legend.text = element_text(size = 15),
         legend.position = "top") +
   geom_point() +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  geom_point(data = filter(pca_nfe, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_nfe, clin_sig=="Pathogenic"), size = 2) + 
   guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 ggMarginal(pca_nfe_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/PCA/nfe-rankscores.png"), width = 8, height = 6, dpi = 300)
@@ -646,10 +646,10 @@ pca_afr_plot <- ggplot(pca_afr, aes(x = V2, y = V3, colour = clin_sig)) +
         legend.text = element_text(size = 15),
         legend.position = "top") +
   geom_point() +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  geom_point(data = filter(pca_afr, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_afr, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_afr, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_afr, clin_sig=="Pathogenic"), size = 2) + 
   guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 ggMarginal(pca_afr_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/PCA/afr-rankscores.png"), width = 8, height = 6, dpi = 300)
@@ -665,10 +665,10 @@ pca_amr_plot <- ggplot(pca_amr, aes(x = V2, y = V3, colour = clin_sig)) +
         legend.text = element_text(size = 15),
         legend.position = "top") +
   geom_point() +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  geom_point(data = filter(pca_amr, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_amr, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_amr, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_amr, clin_sig=="Pathogenic"), size = 2) + 
   guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 ggMarginal(pca_amr_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/PCA/amr-rankscores.png"), width = 8, height = 6, dpi = 300)
@@ -684,10 +684,10 @@ pca_eas_plot <- ggplot(pca_eas, aes(x = V2, y = V3, colour = clin_sig)) +
         legend.text = element_text(size = 15),
         legend.position = "top") +
   geom_point() +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  geom_point(data = filter(pca_eas, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_eas, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_eas, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_eas, clin_sig=="Pathogenic"), size = 2) + 
   guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 ggMarginal(pca_eas_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/PCA/eas-rankscores.png"), width = 8, height = 6, dpi = 300)
@@ -703,10 +703,10 @@ pca_sas_plot <- ggplot(pca_sas, aes(x = V2, y = V3, colour = clin_sig)) +
         legend.text = element_text(size = 15),
         legend.position = "top") +
   geom_point() +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Unreported")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Uncertain")) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Benign"), size = 2) +
-  geom_point(data = filter(pca_gnomadv4_modified, clin_sig=="Pathogenic"), size = 2) + 
+  geom_point(data = filter(pca_sas, clin_sig=="Unreported")) +
+  geom_point(data = filter(pca_sas, clin_sig=="Uncertain")) +
+  geom_point(data = filter(pca_sas, clin_sig=="Benign"), size = 2) +
+  geom_point(data = filter(pca_sas, clin_sig=="Pathogenic"), size = 2) + 
   guides(colour = guide_legend(override.aes = list(shape = 15, size = 5)))
 ggMarginal(pca_sas_plot, type = "boxplot", margins = "both", groupFill = T, groupColour = T, xparams = )
 ggsave(here("output/v4/PCA/sas-rankscores.png"), width = 8, height = 6, dpi = 300)
