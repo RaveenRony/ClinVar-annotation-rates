@@ -123,9 +123,13 @@ gnomadv4_path <- gnomadv4_count %>% filter(clin_var_clinical_significance=="Path
 Figures using gnomAD v4 data
 ```{r}
 gnomadv4_count %>% 
-  group_by(gene) %>% 
-  count(population) %>% 
-  ggplot(aes(x= population, y = n, fill = gene)) + geom_col(colour = "#000000") + 
+  group_by(population) %>% 
+  count(gene) %>% 
+  bind_rows(gnomadv4_count %>% 
+      group_by(gene) %>% 
+      summarise(n = n()) %>% 
+      mutate(population = "Total")) %>% 
+  ggplot(aes(x= population, y = n, fill = gene)) + geom_col(colour = "#000000") +
   theme_bw() +
   theme(axis.title.y = element_blank(),
         legend.title = element_blank(),
@@ -142,21 +146,25 @@ gnomadv4_count %>%
                                "RAD51C" = "darkorange",
                                "RAD51D" = "orange",
                                "TP53" = "#ffcccc")) +
-  scale_y_continuous(breaks = seq(0, 10000 ,by = 500)) + 
-  xlim("NFE", "AFR","AMR", "EAS", "SAS") +
+  scale_y_continuous(breaks = seq(0, 13000 ,by = 1000)) + 
+  xlim("Total", "NFE", "AFR","AMR", "EAS", "SAS") +
   labs(x="Population")
 ggsave(here("output/v4/fig1B.png"), dpi=300, width=8, height=6)
 
 gnomadv4_count %>% 
   group_by(gene) %>% 
   count(clin_var_clinical_significance) %>% 
+  bind_rows(gnomadv4_count %>% 
+            group_by(clin_var_clinical_significance) %>% 
+            summarise(n = n()) %>% 
+            mutate(gene = "Total")) %>% 
   mutate(percent = round((n/sum(n))*100,2)) %>% 
   ggplot(aes(x=gene, y=percent, fill=clin_var_clinical_significance)) + 
   geom_col(colour="black") + 
   scale_fill_manual(values = c("Benign" = "skyblue", 
-                                 "Pathogenic" = "red", 
-                                 "Unreported" = "darkgray", 
-                                 "Uncertain" = "darkgreen")) +
+                               "Pathogenic" = "red", 
+                               "Unreported" = "darkgray", 
+                               "Uncertain" = "darkgreen")) +
   theme_bw() + 
   theme(axis.text.y = element_text(size = 15),
         axis.text.x = element_text(size = 15, angle = 30, hjust=1),
@@ -164,6 +172,7 @@ gnomadv4_count %>%
         axis.title.y = element_text(size = 20),
         legend.text = element_text(size = 15),
         legend.title = element_blank()) +
+  xlim("Total", "ATM", "BARD1", "BRCA1", "BRCA2", "CHEK2","PALB2", "RAD51C", "RAD51D", "TP53") +
   labs(x="Gene", y = "Percentage of variants")
 ggsave(here("output/v4/fig1C.png"), height = 6, width = 8, dpi = 300)
 
@@ -171,6 +180,11 @@ gnomadv4_count %>%
   filter(clin_var_clinical_significance=="Unreported") %>% 
   group_by(gene) %>%
   count(vep_annotation) %>%
+  bind_rows(gnomadv4_count %>% 
+            filter(clin_var_clinical_significance=="Unreported") %>% 
+            group_by(vep_annotation) %>% 
+            summarise(n = n()) %>% 
+            mutate(gene = "Total")) %>% 
   mutate(percent = round((n/sum(n))*100,2),
          vep_annotation = case_when(vep_annotation == "frameshift_variant" ~ "Frameshift Variant",
                                     vep_annotation == "inframe_variant" ~ "Inframe Variant",
@@ -178,7 +192,8 @@ gnomadv4_count %>%
                                     vep_annotation == "splice_site_variant" ~ "Splice Site Variant",
                                     vep_annotation == "start_lost" ~ "Start Lost",
                                     vep_annotation == "stop_gained" ~ "Stop Gained",
-                                    vep_annotation == "stop_lost" ~ "Stop Lost")) %>% 
+                                    vep_annotation == "stop_lost" ~ "Stop Lost",
+                                    T ~ vep_annotation)) %>% 
   ggplot(aes(x=gene, y=percent, fill=vep_annotation)) + 
   geom_col(colour="black") +
   theme_bw() + 
@@ -195,25 +210,37 @@ gnomadv4_count %>%
                                "Start Lost" = "cyan",
                                "Stop Gained" = "blue",
                                "Stop Lost" = "gold")) +
+  xlim("Total", "ATM", "BARD1", "BRCA1", "BRCA2", "CHEK2","PALB2", "RAD51C", "RAD51D", "TP53") +
   labs(x = "Gene", y = "Percentage of variants", fill = "Types of Variants")
 ggsave(here("output/v4/fig1D.png"), height = 6, width = 8, dpi = 300)
 
 gnomadv4_count %>% 
+  mutate(count_range = case_when(count_range == "0-1" ~ "1", T ~ count_range)) %>% 
   unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
   group_by(test) %>%
-  count(count_range) %>% 
-  mutate(n= case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  count(count_range) %>%
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>% 
+  mutate(n = case_when(is.na(n)~ 0, TRUE~n)) %>% 
+  bind_rows(gnomadv4_count %>% 
+            mutate(count_range = case_when(count_range == "0-1" ~ "1", T ~ count_range)) %>% 
+            unite(test, gene, count_range, sep = " ") %>% 
+            group_by(test) %>% 
+            summarise(n = n()) %>% 
+            separate(test, into = c("gene", "count_range"), sep = " ") %>% 
+            mutate(clin_var_clinical_significance = "Total")) %>% 
+  unite(test, gene, clin_var_clinical_significance, sep = " ") %>% 
+  group_by(test) %>%
   mutate(normalised = round((n / sum(n)) * 100, 2)) %>% 
-  separate(test, into = c("gene", "clin_sig"), sep = " ") %>% 
-    ggplot(aes(fill=factor(count_range, c("0-1", "2-3", "4-10", "11-100", "100+")) , x = clin_sig, y = normalised)) + 
+  separate(test, into = c("gene", "clin_var_clinical_significance"), sep = " ") %>% 
+  ggplot(aes(fill=factor(count_range, c("1", "2-3", "4-10", "11-100", "100+")) , x = clin_var_clinical_significance, y = normalised)) + 
     facet_wrap(~gene) +
     geom_col(alpha = 0.7, colour="black") + 
-    scale_fill_manual(values = c("0-1" = "skyblue", 
+    scale_fill_manual(values = c("1" = "skyblue", 
                                  "2-3" = "blue", 
                                  "4-10" = "darkblue", 
                                  "11-100" = "purple",
                                  "100+" = "red")) +
-  theme_bw() + 
+    theme_bw() + 
     theme(axis.text.y = element_text(size = 15),
           axis.text.x = element_text(size = 15,angle = 30, hjust=1),
           axis.title.x = element_text(size = 20),
@@ -221,13 +248,17 @@ gnomadv4_count %>%
           legend.text = element_text(size = 15),
           legend.title = element_text(size = 20),
           strip.text = element_text(size = 10.5)) +
-    xlim("Benign", "Pathogenic", "Uncertain", "Unreported") +
+    xlim("Total", "Benign", "Pathogenic", "Uncertain", "Unreported") +
     labs(fill = "Allele count range", x = "ClinVar Clinical Significance", y = "Percentage of variants")
 ggsave(here("output/v4/fig1E.png"), height = 6, width = 8, dpi = 300)
 
 gnomadv4_count %>% 
   group_by(population) %>% 
   count(clin_var_clinical_significance) %>% 
+  bind_rows(gnomadv4_count %>% 
+            group_by(clin_var_clinical_significance) %>% 
+            summarise(n = n()) %>% 
+            mutate(population = "Total")) %>% 
   mutate(percent = round((n/sum(n))*100,2)) %>% 
   ggplot(aes(x=population, y=percent, fill=clin_var_clinical_significance)) + 
   geom_col(colour="black") + 
@@ -242,7 +273,7 @@ gnomadv4_count %>%
         axis.title.y = element_text(size = 20),
         legend.text = element_text(size = 15),
         legend.title = element_blank()) +
-  xlim("NFE", "AFR", "AMR", "EAS", "SAS") +
+  xlim("Total", "NFE", "AFR", "AMR", "EAS", "SAS") +
   labs(x="Population", y = "Percentage of variants")
 ggsave(here("output/v4/fig1F.png"), height = 6, width = 8, dpi = 300)
 
@@ -2013,4 +2044,27 @@ gnomadv4_count %>%
                                     vep_annotation == "start_lost" ~ "Start Lost",
                                     vep_annotation == "stop_lost" ~ "Stop Lost",
                                     vep_annotation == "stop_gained" ~ "Stop Gained")) #Fig1D breakdown
+
+private_variants <- gnomadv4_count %>% count(population)
+population_data_normalised <- private_variants %>% 
+  add_column(total_individuals = c(37545, 30109, 22448, 622057, 45546)) %>% #Number of individuals from gnomAD v4.0 dataset
+  mutate(rate_per_10000_individuals = (n/total_individuals)*10000) %>% 
+  rename("population_private_variants" = "n") %>% 
+  select(population, total_individuals, population_private_variants, rate_per_10000_individuals) #Population Normalisation
+
+gnomadv4_count %>% 
+  select(gnom_ad_id, population, vep_annotation, clin_var_clinical_significance) %>% 
+  group_by(population) %>% 
+  count(vep_annotation) %>% 
+  pivot_wider(names_from = vep_annotation, values_from = n) %>% 
+  replace_na(list(stop_lost = 0)) %>% 
+  write.csv(here("output/v4/csv files/variant_by_ancestry.csv")) #Number of variants of each type in each population
+
+gnomadv4_count %>% 
+  group_by(population) %>% 
+  filter(clin_var_clinical_significance == "Pathogenic") %>% 
+  count(gene) %>% 
+  pivot_wider(names_from = population, values_from = n) %>% 
+  write.csv(here("output/v4/csv files/pathogenic_variants.csv")) #Number of pathogenic variants in each population
+```
 ```
